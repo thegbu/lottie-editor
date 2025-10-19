@@ -1,15 +1,17 @@
 @font-face {
-    font-family: 'SF Pro Display Bold';
-    src: url('SF-Pro-Display-Bold.otf') format('opentype');
-    font-weight: bold;
-    font-style: normal;
+  font-family: "SF Pro Display Bold";
+  src: url("SF-Pro-Display-Bold.woff2") format("woff2");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'SF Pro Display Medium';
-    src: url('SF-Pro-Display-Medium.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
+  font-family: "SF Pro Display Medium";
+  src: url("SF-Pro-Display-Medium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 :root {
@@ -18,18 +20,18 @@
   --bg-main: #f4f7f9;
   --bg-panel: #ffffff;
   --border-color: #e0e0e0;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
   --text-main: #333;
   --text-sub: #555;
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-  font-family: 'SF Pro Display Bold', sans-serif;
+  font-family: "SF Pro Display Bold", sans-serif;
   margin: 0;
   background: var(--bg-main);
   display: flex;
@@ -39,26 +41,26 @@ body {
 }
 
 h2 {
-    color: #1a1a1a;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    font-size: 1.8em;
-    font-family: 'SF Pro Display Bold', sans-serif;
+  color: #1a1a1a;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+  font-family: "SF Pro Display Bold", sans-serif;
 }
 
 p {
-    font-size: 0.95em;
-    line-height: 1.5;
-    font-family: 'SF Pro Display Medium', sans-serif;
+  font-size: 0.95em;
+  line-height: 1.5;
+  font-family: "SF Pro Display Medium", sans-serif;
 }
 
 #player-panel {
-  width: 40%; 
+  width: 40%;
   max-width: 580px;
-  min-width: 450px; 
+  min-width: 450px;
   background: var(--bg-panel);
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -80,174 +82,181 @@ p {
 
 #anim {
   width: 90%;
-  aspect-ratio: 1 / 1; 
+  aspect-ratio: 1 / 1;
   max-width: 500px;
   margin: 10px 0 20px 0;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow-sm);
-  background: #f0f0f0; 
+  background: #f0f0f0;
   background-image: linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
-                    linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
-                    linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
-                    linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+    linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+    linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
 }
 
 #controls {
-    width: 90%;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-top: 15px;
-    margin-bottom: 20px;
+  width: 90%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+  margin-bottom: 20px;
 }
 #controls div {
-    width: 100%;
-    display: flex;
-    gap: 15px;
-    margin-bottom: 10px;
+  width: 100%;
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
 }
 
-#frameSlider { 
-    width: 100%; 
-    height: 8px;
+#frameSlider {
+  width: 100%;
+  height: 8px;
 }
 #frameLabel {
-    font-size: 14px;
-    color: var(--text-sub);
-    white-space: nowrap;
-    font-family: 'SF Pro Display Bold', sans-serif;
+  font-size: 14px;
+  color: var(--text-sub);
+  white-space: nowrap;
+  font-family: "SF Pro Display Bold", sans-serif;
 }
 
-.action-btn, #playPauseBtn, #exportBtn, .filter-btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'SF Pro Display Bold', sans-serif;
-    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    flex: 1; 
-    text-align: center;
-    white-space: nowrap;
+.action-btn,
+#playPauseBtn,
+#exportBtn,
+.filter-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "SF Pro Display Bold", sans-serif;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.action-btn, #playPauseBtn, #exportBtn {
-    font-size: 17px;
+.action-btn,
+#playPauseBtn,
+#exportBtn {
+  font-size: 17px;
 }
 
 #playPauseBtn {
-    background: var(--primary-color); 
-    color: white;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
 }
 #playPauseBtn:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px); 
-    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
 }
 #playPauseBtn:active {
-    transform: translateY(0); 
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
 }
 
 #exportBtn {
-    background: #4CAF50; 
-    color: white;
-    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+  background: #4caf50;
+  color: white;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
 }
 #exportBtn:not(:disabled):hover {
-    background: #45a049;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.5);
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.5);
 }
 #exportBtn:not(:disabled):active {
-    transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(76, 175, 80, 0.2);
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(76, 175, 80, 0.2);
 }
 
-.action-btn:disabled, #playPauseBtn:disabled, #exportBtn:disabled {
-    background: #ccc !important;
-    color: #666 !important;
-    cursor: not-allowed;
-    box-shadow: none !important;
-    transform: none !important;
+.action-btn:disabled,
+#playPauseBtn:disabled,
+#exportBtn:disabled {
+  background: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .filter-btn {
-    flex: initial;
-    padding: 8px 14px;
-    background: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex: initial;
+  padding: 8px 14px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .filter-btn:hover {
-    background: #f0f0f0;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background: #f0f0f0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .filter-btn.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-    font-weight: 700;
-    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-    transform: none; 
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  font-weight: 700;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  transform: none;
 }
 
 .file-input-section p {
-    font-family: 'SF Pro Display Bold', sans-serif;
+  font-family: "SF Pro Display Bold", sans-serif;
 }
 .file-input-section {
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 30px;
 }
 
 #customFileInputLabel {
-    display: block; 
-    width: 100%;
-    
-    padding: 12px 18px; 
-    font-size: 16px; 
-    font-weight: 700;
-    font-family: 'SF Pro Display Bold', sans-serif;
-    
-    background: var(--primary-color); 
-    color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4); 
-    text-align: left; 
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+
+  padding: 12px 18px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: "SF Pro Display Bold", sans-serif;
+
+  background: var(--primary-color);
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #customFileInputLabel:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px); 
-    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
 }
 
 #editor-controls {
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 20px;
-    margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
 }
 #editor-controls p {
-    font-weight: 600;
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: var(--text-main);
-    font-family: 'SF Pro Display Bold', sans-serif;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--text-main);
+  font-family: "SF Pro Display Bold", sans-serif;
 }
 
 #filter-buttons {
@@ -258,12 +267,12 @@ p {
 }
 
 #dedupe-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--text-sub);
-    font-family: 'SF Pro Display Medium', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-sub);
+  font-family: "SF Pro Display Medium", sans-serif;
 }
 
 #colors {
@@ -274,11 +283,11 @@ p {
 }
 
 .initial-message {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: #999;
-    padding: 40px 0;
-    font-family: 'SF Pro Display Bold', sans-serif;
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+  font-family: "SF Pro Display Bold", sans-serif;
 }
 .color-card {
   background: var(--bg-panel);
@@ -292,37 +301,37 @@ p {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.color-card:hover { 
-    transform: translateY(-2px); 
-    box-shadow: var(--shadow-md);
+.color-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .color-card input[type="color"] {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border: none;
-    width: 48px;
-    height: 48px;
-    background: transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    overflow: hidden;
-    padding: 0;
-    border: 3px solid var(--bg-panel);
-    box-shadow: 0 0 0 1px var(--border-color);
-    transition: box-shadow 0.2s;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  border: 3px solid var(--bg-panel);
+  box-shadow: 0 0 0 1px var(--border-color);
+  transition: box-shadow 0.2s;
 }
 .color-card input[type="color"]:hover {
-    box-shadow: 0 0 0 2px var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color);
 }
 .color-card input[type="color"]::-webkit-color-swatch {
-    border: none;
-    border-radius: 4px;
-    padding: 0;
+  border: none;
+  border-radius: 4px;
+  padding: 0;
 }
 .color-card input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
+  padding: 0;
 }
 
 .color-card label {
@@ -330,12 +339,12 @@ p {
   font-size: 11px;
   color: var(--text-sub);
   text-align: center;
-  text-transform: uppercase; 
+  text-transform: uppercase;
   font-weight: 600;
   width: 100%;
-  font-family: 'SF Pro Display Bold', sans-serif;
+  font-family: "SF Pro Display Bold", sans-serif;
 }
 
 #editor-panel > p:last-of-type {
-    font-family: 'SF Pro Display Bold', sans-serif;
+  font-family: "SF Pro Display Bold", sans-serif;
 }
