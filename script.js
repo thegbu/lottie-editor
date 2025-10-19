@@ -3,6 +3,10 @@ let originalAnimData;
 let allExtractedColors = []; 
 let groupedColors = {}; 
 
+let historyStack = [];
+let redoStack = [];
+const MAX_HISTORY = 20;
+
 const slider = document.getElementById('frameSlider');
 const frameLabel = document.getElementById('frameLabel');
 const groupCheckbox = document.getElementById('groupDuplicates');
@@ -32,7 +36,11 @@ fileInput.addEventListener('change', async e => {
       const text = await file.text();
       
       originalAnimData = JSON.parse(text); 
-      animData = JSON.parse(text);       
+      animData = JSON.parse(text); 
+      
+      historyStack = [];
+      redoStack = [];      
+      saveState();
       
       exportBtn.disabled = false;
       
@@ -46,6 +54,65 @@ fileInput.addEventListener('change', async e => {
       customFileInputLabel.textContent = 'Choose File... (Error processing file)';
       console.error("File processing error:", error);
   }
+});
+
+function saveState() {
+    if (!animData) return;
+    
+    const newState = JSON.parse(JSON.stringify(animData));
+    
+    if (historyStack.length > 0) {
+        const lastState = historyStack[historyStack.length - 1];
+        if (JSON.stringify(newState) === JSON.stringify(lastState)) {
+            return;
+        }
+    }
+
+    historyStack.push(newState);
+    
+    if (historyStack.length > MAX_HISTORY) {
+        historyStack.shift();
+    }
+    
+    redoStack = [];
+}
+
+function undoChange() {
+    if (historyStack.length <= 1) return; 
+    
+    redoStack.push(historyStack.pop());
+    
+    animData = JSON.parse(JSON.stringify(historyStack[historyStack.length - 1]));
+    
+    initializeColorEditor(animData); 
+    reloadAnim();
+}
+
+function redoChange() {
+    if (redoStack.length === 0) return;
+    
+    const redoState = redoStack.pop();
+    
+    historyStack.push(JSON.parse(JSON.stringify(animData)));
+    
+    animData = redoState;
+    
+    initializeColorEditor(animData); 
+    reloadAnim();
+}
+
+document.addEventListener('keydown', (e) => {
+    const isCtrlCmd = e.ctrlKey || e.metaKey;
+    
+    if (isCtrlCmd && e.code === 'KeyZ') {
+        e.preventDefault();
+        
+        if (e.shiftKey) {
+            redoChange();
+        } else {
+            undoChange();
+        }
+    }
 });
 
 exportBtn.onclick = exportLottieJson;
@@ -134,18 +201,20 @@ function exportLottieJson() {
 function initializeColorEditor(data) {
     allExtractedColors = extractColors(data);
     
-    document.querySelectorAll('.filter-btn').forEach(button => {
-        button.onclick = (e) => {
-            currentFilter = e.target.dataset.filter;
-            filterAndRender(currentFilter, e.target);
-        };
-    });
+    if (!document.querySelector('.filter-btn').onclick) {
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.onclick = (e) => {
+                currentFilter = e.target.dataset.filter;
+                filterAndRender(currentFilter, e.target);
+            };
+        });
 
-    groupCheckbox.onchange = () => {
-        filterAndRender(currentFilter, document.querySelector(`[data-filter="${currentFilter}"]`));
-    };
-    
-    filterAndRender('All', document.querySelector('[data-filter="All"]')); 
+        groupCheckbox.onchange = () => {
+            filterAndRender(currentFilter, document.querySelector(`[data-filter="${currentFilter}"]`));
+        };
+    }
+
+    filterAndRender(currentFilter, document.querySelector(`[data-filter="${currentFilter}"]`)); 
 }
 
 function filterAndRender(filterType, activeButton) {
@@ -195,6 +264,14 @@ function renderColors(colors, isGrouped) {
     input.type = 'color';
     input.value = c.hex;
     
+    input.onfocus = () => {
+        saveState();
+    };
+
+    input.onchange = () => {
+        saveState();
+    };
+
     input.oninput = () => {
       if (anim) {
           playerState.isPaused = anim.isPaused;
@@ -221,21 +298,16 @@ function renderColors(colors, isGrouped) {
           instance.ref.k = [normalizedR, normalizedG, normalizedB, 1];
         } else if (instance.type === 'gradient') {
             
-            // --- FIX FOR ANIMATED GRADIENTS ---
             if (instance.ref.a === 1 && Array.isArray(instance.ref.k)) {
-                // Animated Gradient: instance.ref.k is an array of keyframe objects
                 instance.ref.k.forEach(keyframe => {
                     if (Array.isArray(keyframe.s)) {
-                        // 's' is the raw color array. Update the color values inside the array.
                         keyframe.s[instance.index+1] = normalizedR;
                         keyframe.s[instance.index+2] = normalizedG;
                         keyframe.s[instance.index+3] = normalizedB;
                     }
                 });
             } 
-            // Static Gradient
             else if (Array.isArray(instance.ref.k)) {
-                // Static Gradient: instance.ref.k is the raw color array
                 instance.ref.k[instance.index+1] = normalizedR;
                 instance.ref.k[instance.index+2] = normalizedG;
                 instance.ref.k[instance.index+3] = normalizedB;
@@ -304,11 +376,9 @@ function extractColors(obj) {
 
                 if (o.g) {
                     if (Array.isArray(o.g.k)) {
-                        // Static Gradient
                         gradientData = o.g.k;
                         gradientRef = o.g;
                     } else if (o.g.k && Array.isArray(o.g.k.k)) {
-                        // Animated Gradient (FIX: Use the 's' value of the first keyframe)
                         if (o.g.k.k.length > 0 && Array.isArray(o.g.k.k[0].s)) {
                             gradientData = o.g.k.k[0].s;
                             gradientRef = o.g.k;
