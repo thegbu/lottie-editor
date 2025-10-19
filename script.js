@@ -3,6 +3,10 @@ let originalAnimData;
 let allExtractedColors = [];
 let groupedColors = {};
 
+let historyStack = [];
+let redoStack = [];
+const MAX_HISTORY = 20;
+
 const slider = document.getElementById("frameSlider");
 const frameLabel = document.getElementById("frameLabel");
 const groupCheckbox = document.getElementById("groupDuplicates");
@@ -34,6 +38,10 @@ fileInput.addEventListener("change", async (e) => {
     originalAnimData = JSON.parse(text);
     animData = JSON.parse(text);
 
+    historyStack = [];
+    redoStack = [];
+    saveState();
+
     exportBtn.disabled = false;
 
     playPauseBtn.textContent = "Play";
@@ -48,6 +56,72 @@ fileInput.addEventListener("change", async (e) => {
     customFileInputLabel.textContent = "Choose File... (Error processing file)";
     console.error("File processing error:", error);
   }
+});
+
+function saveState() {
+    if (!animData) return;
+
+    const newState = JSON.parse(JSON.stringify(animData));
+
+    if (historyStack.length > 0) {
+        const lastState = historyStack[historyStack.length - 1];
+        if (JSON.stringify(newState) === JSON.stringify(lastState)) {
+            return;
+        }
+    }
+
+    historyStack.push(newState);
+
+    if (historyStack.length > MAX_HISTORY) {
+        historyStack.shift();
+    }
+
+    redoStack = [];
+}
+
+function applyCurrentFilter() {
+    const activeButton = document.querySelector(`[data-filter="${currentFilter}"]`);
+    filterAndRender(currentFilter, activeButton);
+}
+
+function undoChange() {
+    if (historyStack.length <= 1) return;
+
+    redoStack.push(historyStack.pop());
+
+    animData = JSON.parse(JSON.stringify(historyStack[historyStack.length - 1]));
+
+    allExtractedColors = extractColors(animData);
+    reloadAnim();
+    applyCurrentFilter();
+}
+
+function redoChange() {
+    if (redoStack.length === 0) return;
+
+    const redoState = redoStack.pop();
+
+    historyStack.push(JSON.parse(JSON.stringify(animData)));
+
+    animData = redoState;
+
+    allExtractedColors = extractColors(animData);
+    reloadAnim();
+    applyCurrentFilter();
+}
+
+document.addEventListener("keydown", (e) => {
+    const isCtrlCmd = e.ctrlKey || e.metaKey;
+
+    if (isCtrlCmd && e.code === "KeyZ") {
+        e.preventDefault();
+
+        if (e.shiftKey) {
+            redoChange();
+        } else {
+            undoChange();
+        }
+    }
 });
 
 exportBtn.onclick = exportLottieJson;
@@ -161,8 +235,13 @@ function initializeColorEditor(data) {
       document.querySelector(`[data-filter="${currentFilter}"]`)
     );
   };
-
-  filterAndRender("All", document.querySelector('[data-filter="All"]'));
+  
+  // فقط در بارگذاری اولیه فایل، فیلتر را روی "All" تنظیم کن
+  if (currentFilter === "All") {
+    filterAndRender("All", document.querySelector('[data-filter="All"]'));
+  } else {
+    applyCurrentFilter();
+  }
 }
 
 function filterAndRender(filterType, activeButton) {
@@ -231,6 +310,14 @@ function renderColors(colors, isGrouped) {
     const input = document.createElement("input");
     input.type = "color";
     input.value = c.hex;
+
+    input.onfocus = () => {
+        saveState();
+    };
+
+    input.onchange = () => {
+        saveState();
+    };
 
     input.oninput = () => {
       if (anim) {
