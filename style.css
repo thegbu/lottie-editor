@@ -351,6 +351,7 @@ p {
 @media (max-width: 1024px) {
   body {
     overflow-y: auto;
+    flex-direction: column;
   }
 
   #player-panel {
