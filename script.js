@@ -193,7 +193,7 @@ function createAndDownloadFile(exportFormat) {
 
   if (exportFormat && exportFormat.toLowerCase() === "tgs") {
     fileExtension = "tgs";
-    mimeType = "application/x-tgs"; // Standard MIME type for TGS
+    mimeType = "application/x-tgs";
   }
 
   function deepTraverseAndCopyColors(sourceObj, targetObj) {
@@ -292,7 +292,6 @@ function initializeColorEditor(data) {
     );
   };
 
-  // فقط در بارگذاری اولیه فایل، فیلتر را روی "All" تنظیم کن
   if (currentFilter === "All") {
     filterAndRender("All", document.querySelector('[data-filter="All"]'));
   } else {
