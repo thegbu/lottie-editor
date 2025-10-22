@@ -1,60 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Lottie Color Editor</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
-</head>
-<body>
-  <div id="player-panel">
-    <h2>🎬 Preview</h2>
-    <div id="anim"></div>
-    
-    <div id="controls">
-      <div>
-        <button id="playPauseBtn" class="action-btn">Play</button>
-        <button id="exportBtn" class="action-btn" disabled>Export JSON</button>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lottie Color Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+  </head>
+  <body>
+    <div id="player-panel">
+      <h2>🎬 Preview</h2>
+      <div id="anim"></div>
+
+      <div id="controls">
+        <div>
+          <button id="playPauseBtn" class="action-btn">Play</button>
+          <button id="exportBtn" class="action-btn" disabled>
+            Export JSON
+          </button>
+        </div>
+        <input type="range" id="frameSlider" min="0" max="100" value="0" />
+        <span id="frameLabel">Frame: 0</span>
       </div>
-      <input type="range" id="frameSlider" min="0" max="100" value="0">
-      <span id="frameLabel">Frame: 0</span>
     </div>
-  </div>
 
-  <div id="editor-panel">
-    <h2>🎨 Lottie Color Editor</h2>
-    <p>Select a Lottie JSON file and edit its colors (solid, stroke, gradient).</p>
-    
-    <div class="file-input-section">
+    <div id="editor-panel">
+      <h2>🎨 Lottie Color Editor</h2>
+      <p>
+        Select a Lottie JSON file and edit its colors (solid, stroke, gradient).
+      </p>
+
+      <div class="file-input-section">
         <p>1. Upload Lottie JSON file:</p>
-        
-        <label for="fileInput" id="customFileInputLabel">
-            Choose File... (No file selected)
-        </label>
-        <input type="file" id="fileInput" accept=".json" style="display: none;" />
-    </div>
 
-    <div id="editor-controls">
+        <label for="fileInput" id="customFileInputLabel">
+          Choose File... (No file selected)
+        </label>
+        <input
+          type="file"
+          id="fileInput"
+          accept=".json"
+          style="display: none"
+        />
+      </div>
+
+      <div id="editor-controls">
         <p>2. Filter & Group Colors:</p>
         <div id="filter-buttons">
-            <button data-filter="All" class="filter-btn active">All</button>
-            <button data-filter="Fill" class="filter-btn">Fill</button>
-            <button data-filter="Stroke" class="filter-btn">Stroke</button>
-            <button data-filter="Gradient Fill" class="filter-btn">Gradient Fill</button>
-            <button data-filter="Gradient Stroke" class="filter-btn">Gradient Stroke</button>
+          <button data-filter="All" class="filter-btn active">All</button>
+          <button data-filter="Fill" class="filter-btn">Fill</button>
+          <button data-filter="Stroke" class="filter-btn">Stroke</button>
+          <button data-filter="Gradient Fill" class="filter-btn">
+            Gradient Fill
+          </button>
+          <button data-filter="Gradient Stroke" class="filter-btn">
+            Gradient Stroke
+          </button>
         </div>
         <div id="dedupe-group">
-            <input type="checkbox" id="groupDuplicates" checked>
-            <label for="groupDuplicates">Group duplicate colors</label>
+          <input type="checkbox" id="groupDuplicates" checked />
+          <label for="groupDuplicates">Group duplicate colors</label>
         </div>
-    </div>
-    
-    <p>3. Edit Colors:</p>
-    <div id="colors">
-        <p class="initial-message">Upload a file to see color controls.</p>
-    </div>
-  </div>
+      </div>
 
-  <script src="script.js"></script>
-</body>
+      <p>3. Edit Colors:</p>
+      <div id="colors">
+        <p class="initial-message">Upload a file to see color controls.</p>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
 </html>
