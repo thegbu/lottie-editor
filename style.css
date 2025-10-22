@@ -35,6 +35,7 @@ body {
   margin: 0;
   background: var(--bg-main);
   display: flex;
+  height: 100vh;
   overflow-x: hidden;
   color: var(--text-main);
 }
@@ -352,6 +353,7 @@ p {
   body {
     overflow-y: auto;
     flex-direction: column;
+    height: auto;
   }
 
   #player-panel {
@@ -364,6 +366,8 @@ p {
 
   #editor-panel {
     padding: 20px;
+    overflow-y: visible;
+    height: auto;
   }
 
   #anim {
@@ -389,12 +393,16 @@ p {
 
 @media (max-width: 768px) {
   body {
+    overflow-y: auto;
     flex-direction: column;
+    height: auto;
   }
 
   #player-panel,
   #editor-panel {
     padding: 0 15px;
+    overflow-y: visible;
+    height: auto;
   }
 
   #anim {

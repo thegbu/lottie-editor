@@ -59,69 +59,71 @@ fileInput.addEventListener("change", async (e) => {
 });
 
 function saveState() {
-    if (!animData) return;
+  if (!animData) return;
 
-    const newState = JSON.parse(JSON.stringify(animData));
+  const newState = JSON.parse(JSON.stringify(animData));
 
-    if (historyStack.length > 0) {
-        const lastState = historyStack[historyStack.length - 1];
-        if (JSON.stringify(newState) === JSON.stringify(lastState)) {
-            return;
-        }
+  if (historyStack.length > 0) {
+    const lastState = historyStack[historyStack.length - 1];
+    if (JSON.stringify(newState) === JSON.stringify(lastState)) {
+      return;
     }
+  }
 
-    historyStack.push(newState);
+  historyStack.push(newState);
 
-    if (historyStack.length > MAX_HISTORY) {
-        historyStack.shift();
-    }
+  if (historyStack.length > MAX_HISTORY) {
+    historyStack.shift();
+  }
 
-    redoStack = [];
+  redoStack = [];
 }
 
 function applyCurrentFilter() {
-    const activeButton = document.querySelector(`[data-filter="${currentFilter}"]`);
-    filterAndRender(currentFilter, activeButton);
+  const activeButton = document.querySelector(
+    `[data-filter="${currentFilter}"]`
+  );
+  filterAndRender(currentFilter, activeButton);
 }
 
 function undoChange() {
-    if (historyStack.length <= 1) return;
+  if (historyStack.length <= 1) return;
 
-    redoStack.push(historyStack.pop());
+  redoStack.push(historyStack.pop());
 
-    animData = JSON.parse(JSON.stringify(historyStack[historyStack.length - 1]));
+  animData = JSON.parse(JSON.stringify(historyStack[historyStack.length - 1]));
 
-    allExtractedColors = extractColors(animData);
-    reloadAnim();
-    applyCurrentFilter();
+  allExtractedColors = extractColors(animData);
+  reloadAnim();
+  applyCurrentFilter();
 }
 
 function redoChange() {
-    if (redoStack.length === 0) return;
+  if (redoStack.length === 0) return;
 
-    const redoState = redoStack.pop();
+  const redoState = redoStack.pop();
 
-    historyStack.push(JSON.parse(JSON.stringify(animData)));
+  historyStack.push(JSON.parse(JSON.stringify(animData)));
 
-    animData = redoState;
+  animData = redoState;
 
-    allExtractedColors = extractColors(animData);
-    reloadAnim();
-    applyCurrentFilter();
+  allExtractedColors = extractColors(animData);
+  reloadAnim();
+  applyCurrentFilter();
 }
 
 document.addEventListener("keydown", (e) => {
-    const isCtrlCmd = e.ctrlKey || e.metaKey;
+  const isCtrlCmd = e.ctrlKey || e.metaKey;
 
-    if (isCtrlCmd && e.code === "KeyZ") {
-        e.preventDefault();
+  if (isCtrlCmd && e.code === "KeyZ") {
+    e.preventDefault();
 
-        if (e.shiftKey) {
-            redoChange();
-        } else {
-            undoChange();
-        }
+    if (e.shiftKey) {
+      redoChange();
+    } else {
+      undoChange();
     }
+  }
 });
 
 exportBtn.onclick = exportLottieJson;
@@ -206,7 +208,7 @@ function exportLottieJson() {
 
   deepTraverseAndCopyColors(animData, finalExportData);
 
-  const jsonString = JSON.stringify(finalExportData, null, 2);
+  const jsonString = JSON.stringify(finalExportData);
 
   const blob = new Blob([jsonString], { type: "application/json" });
 
@@ -235,7 +237,7 @@ function initializeColorEditor(data) {
       document.querySelector(`[data-filter="${currentFilter}"]`)
     );
   };
-  
+
   // فقط در بارگذاری اولیه فایل، فیلتر را روی "All" تنظیم کن
   if (currentFilter === "All") {
     filterAndRender("All", document.querySelector('[data-filter="All"]'));
@@ -312,11 +314,11 @@ function renderColors(colors, isGrouped) {
     input.value = c.hex;
 
     input.onfocus = () => {
-        saveState();
+      saveState();
     };
 
     input.onchange = () => {
-        saveState();
+      saveState();
     };
 
     input.oninput = () => {
