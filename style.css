@@ -349,6 +349,81 @@ p {
   font-family: "SF Pro Display Bold", sans-serif;
 }
 
+/* --- Modal Styles --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: var(--bg-panel);
+  padding: 5px 35px 25px 35px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  position: relative;
+  width: 90%;
+  max-width: 400px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  color: #aaa;
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-content h3 {
+  border-bottom: none;
+  margin-bottom: 25px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.modal-buttons .action-btn {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+  font-family: "SF Pro Display Medium", sans-serif;
+  font-weight: normal;
+}
+
+.modal-buttons .action-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
+}
+
+.modal-buttons .action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+}
+
 @media (max-width: 1024px) {
   body {
     overflow-y: auto;

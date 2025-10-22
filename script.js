@@ -33,7 +33,17 @@ fileInput.addEventListener("change", async (e) => {
 
   try {
     customFileInputLabel.textContent = file.name;
-    const text = await file.text();
+    let text;
+
+    if (file.name.toLowerCase().endsWith(".tgs")) {
+      const buffer = await file.arrayBuffer();
+      const decompressed = pako.ungzip(new Uint8Array(buffer), {
+        to: "string",
+      });
+      text = decompressed;
+    } else {
+      text = await file.text();
+    }
 
     originalAnimData = JSON.parse(text);
     animData = JSON.parse(text);
@@ -45,16 +55,16 @@ fileInput.addEventListener("change", async (e) => {
     exportBtn.disabled = false;
 
     playPauseBtn.textContent = "Play";
-    playerState = { isPaused: true, currentFrame: 0.0 };
+    playerState.isPaused = true;
 
     initializeColorEditor(animData);
     reloadAnim();
   } catch (error) {
+    console.error("Error loading or parsing animation file:", error);
+    customFileInputLabel.textContent = `Error: Invalid Lottie/TGS file. (${error.message})`;
     alert(
-      "Error processing file: Please ensure you uploaded a valid Lottie JSON file."
+      `An error occurred while loading the file. Error detail: ${error.message}`
     );
-    customFileInputLabel.textContent = "Choose File... (Error processing file)";
-    console.error("File processing error:", error);
   }
 });
 
@@ -126,7 +136,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-exportBtn.onclick = exportLottieJson;
+exportBtn.onclick = exportFile;
 
 playPauseBtn.onclick = () => {
   if (!anim) return;
@@ -142,13 +152,49 @@ playPauseBtn.onclick = () => {
   }
 };
 
-function exportLottieJson() {
+function exportFile() {
   if (!originalAnimData) {
-    alert("Please load a Lottie JSON file first.");
+    alert("Please load a Lottie or TGS file first.");
     return;
   }
 
+  const modal = document.getElementById("export-modal");
+  const closeModalBtn = document.querySelector(".modal-close");
+  const exportJsonBtn = document.getElementById("export-as-json");
+  const exportTgsBtn = document.getElementById("export-as-tgs");
+
+  modal.style.display = "flex";
+  setTimeout(() => modal.classList.add("show"), 10);
+
+  const closeModal = () => {
+    modal.classList.remove("show");
+    setTimeout(() => (modal.style.display = "none"), 300);
+  };
+
+  const handleExport = (format) => {
+    closeModal();
+    createAndDownloadFile(format);
+  };
+
+  exportJsonBtn.onclick = () => handleExport("json");
+  exportTgsBtn.onclick = () => handleExport("tgs");
+  closeModalBtn.onclick = closeModal;
+  modal.onclick = (e) => {
+    if (e.target === modal) closeModal();
+  };
+}
+
+function createAndDownloadFile(exportFormat) {
   const finalExportData = JSON.parse(JSON.stringify(originalAnimData));
+
+  let filename = "lottie-edited";
+  let mimeType = "application/json";
+  let fileExtension = "json";
+
+  if (exportFormat && exportFormat.toLowerCase() === "tgs") {
+    fileExtension = "tgs";
+    mimeType = "application/x-tgs"; // Standard MIME type for TGS
+  }
 
   function deepTraverseAndCopyColors(sourceObj, targetObj) {
     if (
@@ -208,14 +254,22 @@ function exportLottieJson() {
 
   deepTraverseAndCopyColors(animData, finalExportData);
 
-  const jsonString = JSON.stringify(finalExportData);
+  let fileContent;
+  if (fileExtension === "tgs") {
+    const jsonString = JSON.stringify(finalExportData);
+    const compressed = pako.gzip(jsonString);
+    fileContent = compressed;
+    filename += ".tgs";
+  } else {
+    fileContent = JSON.stringify(finalExportData);
+    filename += ".json";
+  }
 
-  const blob = new Blob([jsonString], { type: "application/json" });
+  const blob = new Blob([fileContent], { type: mimeType });
 
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "lottie-edited.json";
-
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

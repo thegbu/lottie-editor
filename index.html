@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
   </head>
   <body>
     <div id="player-panel">
@@ -15,9 +16,7 @@
       <div id="controls">
         <div>
           <button id="playPauseBtn" class="action-btn">Play</button>
-          <button id="exportBtn" class="action-btn" disabled>
-            Export JSON
-          </button>
+          <button id="exportBtn" class="action-btn" disabled>Export</button>
         </div>
         <input type="range" id="frameSlider" min="0" max="100" value="0" />
         <span id="frameLabel">Frame: 0</span>
@@ -27,11 +26,12 @@
     <div id="editor-panel">
       <h2>🎨 Lottie Color Editor</h2>
       <p>
-        Select a Lottie JSON file and edit its colors (solid, stroke, gradient).
+        Select a Lottie JSON or TGS file and edit its colors (solid, stroke,
+        gradient).
       </p>
 
       <div class="file-input-section">
-        <p>1. Upload Lottie JSON file:</p>
+        <p>1. Upload Lottie JSON or TGS file:</p>
 
         <label for="fileInput" id="customFileInputLabel">
           Choose File... (No file selected)
@@ -39,7 +39,7 @@
         <input
           type="file"
           id="fileInput"
-          accept=".json"
+          accept=".json, .tgs"
           style="display: none"
         />
       </div>
@@ -66,6 +66,20 @@
       <p>3. Edit Colors:</p>
       <div id="colors">
         <p class="initial-message">Upload a file to see color controls.</p>
+      </div>
+    </div>
+
+    <!-- Export Format Modal -->
+    <div id="export-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <h3>Choose Export Format</h3>
+        <div class="modal-buttons">
+          <button id="export-as-json" class="action-btn">
+            Export as .json
+          </button>
+          <button id="export-as-tgs" class="action-btn">Export as .tgs</button>
+        </div>
       </div>
     </div>
 
