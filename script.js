@@ -397,17 +397,23 @@ function renderColors(colors, isGrouped) {
         const normalizedB = b / 255;
 
         if (instance.type === "solid" || instance.type === "stroke") {
-          instance.ref.k = [normalizedR, normalizedG, normalizedB, 1];
+          if (instance.ref.hasOwnProperty("s")) {
+            instance.ref.s = [normalizedR, normalizedG, normalizedB, 1];
+          } else if (instance.ref.hasOwnProperty("k")) {
+            instance.ref.k = [normalizedR, normalizedG, normalizedB, 1];
+          }
         } else if (instance.type === "gradient") {
-          if (instance.ref.a === 1 && Array.isArray(instance.ref.k)) {
-            instance.ref.k.forEach((keyframe) => {
-              if (Array.isArray(keyframe.s)) {
-                keyframe.s[instance.index + 1] = normalizedR;
-                keyframe.s[instance.index + 2] = normalizedG;
-                keyframe.s[instance.index + 3] = normalizedB;
-              }
-            });
-          } else if (Array.isArray(instance.ref.k)) {
+          if (
+            instance.ref.hasOwnProperty("s") &&
+            Array.isArray(instance.ref.s)
+          ) {
+            instance.ref.s[instance.index + 1] = normalizedR;
+            instance.ref.s[instance.index + 2] = normalizedG;
+            instance.ref.s[instance.index + 3] = normalizedB;
+          } else if (
+            instance.ref.hasOwnProperty("k") &&
+            Array.isArray(instance.ref.k)
+          ) {
             instance.ref.k[instance.index + 1] = normalizedR;
             instance.ref.k[instance.index + 2] = normalizedG;
             instance.ref.k[instance.index + 3] = normalizedB;
@@ -465,76 +471,92 @@ function extractColors(obj) {
           groupedColors[hex].instances.push(instance);
         };
 
-        if (o.c && Array.isArray(o.c.k)) {
-          let instanceType = "solid";
-          let instanceShapeType = "solid color (unknown)";
+        if (o.c && o.c.k) {
+          if (o.c.a === 1) {
+            if (Array.isArray(o.c.k)) {
+              o.c.k.forEach((keyframe) => {
+                if (keyframe.s && Array.isArray(keyframe.s)) {
+                  let instanceShapeType =
+                    shapeType === "fl" ? "fill" : "solid color (unknown)";
+                  addColor(
+                    "solid",
+                    instanceShapeType,
+                    keyframe,
+                    rgbaToHex(keyframe.s)
+                  );
+                }
+              });
+            }
+          } else if (Array.isArray(o.c.k)) {
+            let instanceType = "solid";
+            let instanceShapeType = "solid color (unknown)";
 
-          if (shapeType === "fl") {
-            instanceShapeType = "fill";
-            instanceType = "solid";
-          } else if (shapeType === "st") {
-            instanceShapeType = "stroke";
-            instanceType = "stroke";
+            if (shapeType === "fl") {
+              instanceShapeType = "fill";
+              instanceType = "solid";
+            } else if (shapeType === "st") {
+              instanceShapeType = "stroke";
+              instanceType = "stroke";
+            }
+
+            addColor(instanceType, instanceShapeType, o.c, rgbaToHex(o.c.k));
           }
-
-          addColor(instanceType, instanceShapeType, o.c, rgbaToHex(o.c.k));
-        }
-        if (o.sc && Array.isArray(o.sc.k)) {
-          addColor(
-            "stroke",
-            shapeType === "st" ? "stroke" : "stroke (unknown)",
-            o.sc,
-            rgbaToHex(o.sc.k)
-          );
         }
 
-        let gradientData = null;
-        let gradientRef = null;
+        if (o.sc && o.sc.k) {
+          if (o.sc.a === 1 && Array.isArray(o.sc.k)) {
+            o.sc.k.forEach((keyframe) => {
+              if (keyframe.s && Array.isArray(keyframe.s)) {
+                addColor("stroke", "stroke", keyframe, rgbaToHex(keyframe.s));
+              }
+            });
+          } else if (Array.isArray(o.sc.k)) {
+            addColor("stroke", "stroke", o.sc, rgbaToHex(o.sc.k));
+          }
+        }
 
         if (o.g) {
-          if (Array.isArray(o.g.k)) {
-            gradientData = o.g.k;
-            gradientRef = o.g;
-          } else if (o.g.k && Array.isArray(o.g.k.k)) {
-            gradientRef = o.g.k;
-
-            const innerArray = o.g.k.k;
-
-            if (innerArray.length > 0 && typeof innerArray[0] === "number") {
-              gradientData = innerArray;
-            } else if (
-              innerArray.length > 0 &&
-              typeof innerArray[0] === "object" &&
-              Array.isArray(innerArray[0].s)
-            ) {
-              gradientData = innerArray[0].s;
-            }
-          }
-        }
-
-        if (gradientData) {
-          const arr = gradientData;
-          const numStops = o.g.p || arr.length / 4;
-          const loopLimit = numStops * 4;
-
           let gradientShapeType = "gradient";
           if (shapeType === "gf") gradientShapeType = "gradient fill";
           else if (shapeType === "gs") gradientShapeType = "gradient stroke";
 
-          for (let i = 0; i < loopLimit; i += 4) {
-            const offset = arr[i];
-            const r = arr[i + 1],
-              g = arr[i + 2],
-              b = arr[i + 3];
+          const processGradient = (gradientData, gradientRef) => {
+            const arr = gradientData;
+            const numStops = o.g.p || arr.length / 4;
+            const loopLimit = numStops * 4;
 
-            addColor(
-              "gradient",
-              gradientShapeType,
-              gradientRef,
-              rgbToHex(r * 255, g * 255, b * 255),
-              i,
-              offset
-            );
+            for (let i = 0; i < loopLimit; i += 4) {
+              const offset = arr[i];
+              const r = arr[i + 1],
+                g = arr[i + 2],
+                b = arr[i + 3];
+
+              addColor(
+                "gradient",
+                gradientShapeType,
+                gradientRef,
+                rgbToHex(r * 255, g * 255, b * 255),
+                i,
+                offset
+              );
+            }
+          };
+
+          if (o.g.k && !o.g.k.a && Array.isArray(o.g.k)) {
+            processGradient(o.g.k, o.g);
+          } else if (o.g.k && o.g.k.a === 1 && Array.isArray(o.g.k.k)) {
+            o.g.k.k.forEach((keyframe) => {
+              if (keyframe && Array.isArray(keyframe.s)) {
+                processGradient(keyframe.s, keyframe);
+              }
+            });
+          } else if (
+            o.g.k &&
+            o.g.k.k &&
+            Array.isArray(o.g.k.k) &&
+            typeof o.g.k.k[0] === "number"
+          ) {
+            processGradient(o.g.k.k, o.g.k);
           }
         }
 
