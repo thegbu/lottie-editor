@@ -27,7 +27,7 @@ const customFileInputLabel = document.getElementById("customFileInputLabel");
 fileInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) {
-    customFileInputLabel.textContent = "Choose File... (No file selected)";
+    customFileInputLabel.textContent = "Choose File ...";
     return;
   }
 
@@ -584,7 +584,7 @@ function reloadAnim() {
     renderer: "svg",
     loop: true,
     autoplay: false,
-    animationData: animData,
+    animationData: JSON.parse(JSON.stringify(animData)),
   });
 
   if (animData) {
