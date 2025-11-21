@@ -1,29 +1,32 @@
 @font-face {
-  font-family: "SF Pro Display Bold";
-  src: url("SF-Pro-Display-Bold.woff2") format("woff2");
+  font-family: "SF Pro Text Bold";
+  src: url("fonts/sf-pro-text-bold.woff2") format("woff2");
   font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "SF Pro Display Medium";
-  src: url("SF-Pro-Display-Medium.woff2") format("woff2");
+  font-family: "SF Pro Text Medium";
+  src: url("fonts/sf-pro-text-medium.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  --primary-color: #007bff;
-  --primary-hover: #0056b3;
-  --bg-main: #f4f7f9;
-  --bg-panel: #ffffff;
-  --border-color: #e0e0e0;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --text-main: #333;
-  --text-sub: #555;
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --accent-color: #8b5cf6;
+  --bg-main: #f3f4f6;
+  --bg-glass: rgba(255, 255, 255, 0.75);
+  --bg-glass-border: rgba(255, 255, 255, 0.5);
+  --text-main: #1f2937;
+  --text-sub: #6b7280;
+  --border-light: rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  --glass-blur: blur(12px);
 }
 
 * {
@@ -31,338 +34,442 @@
 }
 
 body {
-  font-family: "SF Pro Display Bold", sans-serif;
+  font-family: "SF Pro Text Medium", sans-serif;
   margin: 0;
-  background: var(--bg-main);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
   height: 100vh;
-  overflow-x: hidden;
+  overflow: hidden;
   color: var(--text-main);
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
+  margin: 20px 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 h2 {
-  color: #1a1a1a;
-  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-light);
   padding-bottom: 10px;
-  margin-bottom: 20px;
-  font-size: 1.8em;
-  font-family: "SF Pro Display Bold", sans-serif;
+  font-size: 1.5rem;
+  font-family: "SF Pro Text Bold", sans-serif;
+  letter-spacing: -0.02em;
 }
 
 p {
-  font-size: 0.95em;
-  line-height: 1.5;
-  font-family: "SF Pro Display Medium", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-sub);
+  margin-bottom: 1rem;
+}
+
+#player-panel,
+#editor-panel {
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--bg-glass-border);
+  box-shadow: var(--shadow-glass);
+  border-radius: 24px;
+  margin: 20px;
+  padding: 15px 30px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transition: all 0.3s ease;
 }
 
 #player-panel {
   width: 40%;
-  max-width: 580px;
-  min-width: 350px;
-  background: var(--bg-panel);
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
+  max-width: 500px;
+  min-width: 380px;
   align-items: center;
-  padding-top: 10px;
-  padding-right: 20px;
-  padding-bottom: 20px;
-  padding-left: 20px;
-  overflow-y: auto;
+  margin-right: 10px;
 }
 
 #editor-panel {
   flex: 1;
-  padding-top: 10px;
-  padding-right: 30px;
-  padding-bottom: 30px;
-  padding-left: 30px;
-  overflow-y: auto;
+  margin-left: 10px;
 }
 
 #anim {
-  width: 90%;
+  width: 100%;
   aspect-ratio: 1 / 1;
-  max-width: 500px;
-  margin: 10px 0 20px 0;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  background: #f0f0f0;
-  background-image: linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
-    linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
-    linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+  max-width: 400px;
+  margin: 10px 0;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  background-image:
+    linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #controls {
-  width: 90%;
-  max-width: 500px;
+  width: 100%;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 15px;
-  margin-bottom: 20px;
-}
-#controls div {
-  width: 100%;
-  display: flex;
   gap: 15px;
-  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
-#frameSlider {
+#controls div {
+  display: flex;
+  gap: 10px;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  height: 8px;
-}
-#frameLabel {
-  font-size: 14px;
-  color: var(--text-sub);
-  white-space: nowrap;
-  font-family: "SF Pro Display Bold", sans-serif;
+  background: transparent;
 }
 
-.action-btn,
-#playPauseBtn,
-#exportBtn,
-.filter-btn {
-  padding: 12px 15px;
-  border: none;
-  border-radius: 8px;
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: var(--primary-color);
   cursor: pointer;
-  font-size: 14px;
+  margin-top: -6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: #e5e7eb;
+  border-radius: 2px;
+}
+
+#frameLabel {
+  font-size: 0.85rem;
+  color: var(--text-sub);
   font-weight: 600;
-  font-family: "SF Pro Display Bold", sans-serif;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  flex: 1;
   text-align: center;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+#frameInput {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-family: "SF Pro Text Medium", sans-serif;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+#frameInput:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .action-btn,
-#playPauseBtn,
-#exportBtn {
-  font-size: 17px;
+.filter-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: "SF Pro Text Bold", sans-serif;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn {
+  flex: 1;
+  color: white;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
 }
 
 #playPauseBtn {
   background: var(--primary-color);
-  color: white;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
 }
+
 #playPauseBtn:hover {
   background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
-}
-#playPauseBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
 }
 
 #exportBtn {
-  background: #4caf50;
-  color: white;
-  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
-}
-#exportBtn:not(:disabled):hover {
-  background: #45a049;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.5);
-}
-#exportBtn:not(:disabled):active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(76, 175, 80, 0.2);
+  background: #10b981;
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
 }
 
-.action-btn:disabled,
-#playPauseBtn:disabled,
-#exportBtn:disabled {
-  background: #ccc !important;
-  color: #666 !important;
+#exportBtn:not(:disabled):hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+}
+
+.action-btn:disabled {
+  background: #d1d5db !important;
+  color: #9ca3af !important;
   cursor: not-allowed;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .filter-btn {
-  flex: initial;
-  padding: 10px 15px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: white;
+  color: var(--text-sub);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
+
 .filter-btn:hover {
-  background: #f0f0f0;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
+
 .filter-btn.active {
   background: var(--primary-color);
   color: white;
   border-color: var(--primary-color);
-  font-weight: 700;
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-  transform: none;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
 }
 
-.file-input-section p {
-  font-family: "SF Pro Display Bold", sans-serif;
-}
 .file-input-section {
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-color);
   margin-bottom: 30px;
 }
 
-#customFileInputLabel {
-  display: block;
-  width: 50%;
-
-  padding: 15px 18px;
-  font-size: 16px;
-  font-weight: 700;
-  font-family: "SF Pro Display Bold", sans-serif;
-
-  background: #f8f8f8;
-  color: var(--text-main);
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: var(--shadow-sm);
-  text-align: left;
+.drop-zone {
+  width: 100%;
+  height: 160px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.5);
 }
 
-#customFileInputLabel:hover {
-  background: #f0f0f0;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: var(--primary-color);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.drop-zone-content {
+  text-align: center;
+  pointer-events: none;
+}
+
+.upload-icon {
+  color: var(--text-sub);
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+
+.drop-zone:hover .upload-icon {
+  color: var(--primary-color);
+}
+
+.drop-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.drop-subtext {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+  margin: 5px 0 0 0;
+}
+
+.file-name-display {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  text-align: center;
+  min-height: 1.2em;
 }
 
 #editor-controls {
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 20px;
-  margin-bottom: 20px;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 25px;
 }
-#editor-controls p {
-  font-weight: 600;
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: var(--text-main);
-  font-family: "SF Pro Display Bold", sans-serif;
+
+.controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.controls-header p {
+  margin: 0;
+}
+
+.danger-btn {
+  background: #ef4444;
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.25);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  flex: initial;
+}
+
+.danger-btn:not(:disabled):hover {
+  background: #dc2626;
+  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
 }
 
 #filter-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 15px;
 }
 
 #dedupe-group {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 10px;
+  font-size: 0.9rem;
   color: var(--text-sub);
-  font-family: "SF Pro Display Medium", sans-serif;
 }
 
-#colors {
-  margin-top: 15px;
+.colors-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 20px;
+  padding-bottom: 20px;
 }
 
-.initial-message {
-  grid-column: 1 / -1;
-  text-align: center;
-  color: #999;
-  padding: 40px 0;
-  font-family: "SF Pro Display Bold", sans-serif;
+.colors-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-bottom: 20px;
 }
+
 .color-card {
-  background: var(--bg-panel);
-  border-radius: 8px;
-  padding: 10px;
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .color-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-color);
 }
 
 .color-card input[type="color"] {
   -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
   border: none;
-  width: 48px;
-  height: 48px;
-  background: transparent;
-  border-radius: 6px;
+  width: 60px;
+  height: 60px;
+  background: none;
   cursor: pointer;
-  overflow: hidden;
-  padding: 0;
-  border: 3px solid var(--bg-panel);
-  box-shadow: 0 0 0 1px var(--border-color);
-  transition: box-shadow 0.2s;
-}
-.color-card input[type="color"]:hover {
-  box-shadow: 0 0 0 2px var(--primary-color);
-}
-.color-card input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 4px;
   padding: 0;
 }
+
 .color-card input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
 }
 
-.color-card label {
-  margin-top: 8px;
-  font-size: 11px;
-  color: var(--text-sub);
-  text-align: center;
-  text-transform: uppercase;
-  font-weight: 600;
-  width: 100%;
-  font-family: "SF Pro Display Bold", sans-serif;
+.color-card input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
-#editor-panel > p:last-of-type {
-  font-family: "SF Pro Display Bold", sans-serif;
+.color-card label {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  text-transform: capitalize;
+  letter-spacing: 0.03em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.initial-message {
+  width: 100%;
+  text-align: center;
+  color: var(--text-sub);
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  border: 2px dashed #e5e7eb;
 }
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
+  transition: all 0.3s ease;
 }
 
 .modal-overlay.show {
@@ -371,149 +478,166 @@ p {
 }
 
 .modal-content {
-  background: var(--bg-panel);
-  padding: 5px 35px 25px 35px;
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  text-align: center;
-  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 30px 30px 40px 30px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
   width: 90%;
-  max-width: 400px;
+  max-width: 420px;
+  text-align: center;
+  transform: scale(0.95) translateY(10px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-overlay.show .modal-content {
+  transform: scale(1) translateY(0);
 }
 
 .modal-close {
   position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 28px;
-  color: #aaa;
+  top: 20px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--text-sub);
   cursor: pointer;
+  transition: all 0.2s ease;
   line-height: 1;
 }
+
 .modal-close:hover {
-  color: #333;
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-main);
+  transform: rotate(90deg);
 }
 
 .modal-content h3 {
-  border-bottom: none;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  color: var(--text-main);
+}
+
+.modal-description {
   margin-bottom: 25px;
+  color: var(--text-sub);
+  font-size: 0.9rem;
 }
 
 .modal-buttons {
   display: flex;
-  gap: 15px;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
 }
 
-.modal-buttons .action-btn {
+.modal-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  justify-content: center;
   background: var(--primary-color);
   color: white;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
-  font-family: "SF Pro Display Medium", sans-serif;
-  font-weight: normal;
 }
 
-.modal-buttons .action-btn:hover {
+.modal-btn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
 }
 
-.modal-buttons .action-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
-}
-
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   body {
-    overflow-y: auto;
     flex-direction: column;
-    height: auto;
-  }
-
-  #player-panel {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding-bottom: 30px;
-  }
-
-  #editor-panel {
-    padding: 20px;
-    overflow-y: visible;
-    height: auto;
-  }
-
-  #anim {
-    width: 80%;
-    max-width: 400px;
-    margin: 20px auto;
-  }
-
-  #controls {
-    width: 80%;
-    max-width: 400px;
-  }
-
-  #controls div {
-    flex-direction: row;
-  }
-
-  #colors {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  body {
     overflow-y: auto;
-    flex-direction: column;
     height: auto;
   }
 
   #player-panel,
   #editor-panel {
-    padding: 0 20px;
-    overflow-y: visible;
-    height: auto;
+    width: auto;
+    margin: 15px;
+    max-width: none;
+    min-width: 0;
   }
 
-  #anim {
-    width: 95%;
-    margin: 2px auto 15px auto;
+  #player-panel {
+    margin-bottom: 0;
   }
+}
 
-  #controls {
-    width: 95%;
-    max-width: 300px;
-  }
 
-  #customFileInputLabel {
-    width: 100%;
-  }
+.gradient-card {
+  flex: 1 0 auto;
+  width: fit-content;
+  max-width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
 
-  #controls div {
-    flex-direction: row;
-  }
+.gradient-stops {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
 
-  #filter-buttons {
-    flex-wrap: wrap;
-  }
+.gradient-stop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #f9fafb;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
 
-  #colors {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-  }
+.gradient-stop input[type="number"] {
+  width: 70px;
+  padding: 4px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-family: "SF Pro Text Medium", sans-serif;
+  color: var(--text-main);
+}
 
-  h2 {
-    font-size: 1.5em;
-  }
+.gradient-stop input[type="number"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
 
-  .action-btn,
-  #playPauseBtn,
-  #exportBtn {
-    font-size: 15px;
-    padding: 10px 15px;
-  }
+.gradient-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.gradient-info label {
+  margin: 0;
+  text-align: center;
+}
+
+.flex-break {
+  flex-basis: 100%;
+  height: 0;
+  margin: 0;
 }
