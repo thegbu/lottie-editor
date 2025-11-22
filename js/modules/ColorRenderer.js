@@ -92,6 +92,11 @@ export class ColorRenderer {
         input.type = "color";
         input.value = c.hex;
 
+        // Store metadata for label updates
+        input.dataset.filterType = filterType;
+        input.dataset.index = index;
+        input.dataset.shapeType = c.shapeType;
+
         input.onfocus = () => this.onSaveState();
         input.onchange = () => this.onSaveState();
         input.oninput = () => this.handleColorInput(input, c, isGrouped);
@@ -263,9 +268,25 @@ export class ColorRenderer {
 
         c.hex = newHex;
 
-        // Update the label if it exists (for gradient stops)
+        // Update the label if it exists
         if (input.nextElementSibling && input.nextElementSibling.tagName === "LABEL") {
-            input.nextElementSibling.textContent = newHex.toUpperCase();
+            if (isGrouped) {
+                // For batch/grouped colors, show the instance count
+                input.nextElementSibling.textContent = `${c.count} instances of ${newHex.toUpperCase()}`;
+            } else {
+                // For non-grouped colors, preserve the original label format
+                const filterType = input.dataset.filterType;
+                const index = input.dataset.index;
+                const shapeType = input.dataset.shapeType;
+
+                if (filterType === "All" && shapeType && index !== undefined) {
+                    // Show shape type, index, and hex
+                    input.nextElementSibling.innerHTML = `${shapeType} ${parseInt(index) + 1}<br>${newHex.toUpperCase()}`;
+                } else {
+                    // Just show the hex (for gradients or filtered views)
+                    input.nextElementSibling.textContent = newHex.toUpperCase();
+                }
+            }
         }
 
         this.onColorChange();

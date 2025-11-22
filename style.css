@@ -405,7 +405,7 @@ input[type=range]::-webkit-slider-runnable-track {
 
 .colors-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 20px;
   padding-bottom: 20px;
 }
@@ -439,11 +439,13 @@ input[type=range]::-webkit-slider-runnable-track {
   -webkit-appearance: none;
   appearance: none;
   border: none;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   background: none;
   cursor: pointer;
   padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .color-card input[type="color"]::-webkit-color-swatch-wrapper {
@@ -452,7 +454,7 @@ input[type=range]::-webkit-slider-runnable-track {
 
 .color-card input[type="color"]::-webkit-color-swatch {
   border: none;
-  border-radius: 12px;
+  border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 

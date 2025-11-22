@@ -109,8 +109,20 @@ export class ColorExtractor {
             if (Array.isArray(o.c.k)) {
                 o.c.k.forEach((keyframe) => {
                     if (keyframe.s && Array.isArray(keyframe.s)) {
-                        let instanceShapeType = shapeType === "fl" ? "fill" : "solid color (unknown)";
-                        this.addColor(c, "solid", instanceShapeType, keyframe, rgbaToHex(keyframe.s));
+                        let instanceType = "solid";
+                        let instanceShapeType = "solid color (unknown)";
+
+                        if (shapeType === "fl") {
+                            instanceShapeType = "fill";
+                            instanceType = "solid";
+                        } else if (shapeType === "st") {
+                            instanceShapeType = "stroke";
+                            instanceType = "stroke";
+                        } else {
+                            console.warn(`Unknown animated color type detected. Shape type (ty): "${shapeType}", Color:`, rgbaToHex(keyframe.s), "Parent object:", o);
+                        }
+
+                        this.addColor(c, instanceType, instanceShapeType, keyframe, rgbaToHex(keyframe.s));
                     }
                 });
             }
@@ -124,6 +136,8 @@ export class ColorExtractor {
             } else if (shapeType === "st") {
                 instanceShapeType = "stroke";
                 instanceType = "stroke";
+            } else {
+                console.warn(`Unknown static color type detected. Shape type (ty): "${shapeType}", Color:`, rgbaToHex(o.c.k), "Parent object:", o);
             }
 
             this.addColor(c, instanceType, instanceShapeType, o.c, rgbaToHex(o.c.k));
