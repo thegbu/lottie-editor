@@ -15,6 +15,7 @@ class LottieEditor {
         this.originalAnimData = null;
         this.allExtractedColors = [];
         this.currentFilter = "All";
+        this.wasPlayingBeforeModal = false;
 
         // Initialize modules
         this.fileHandler = new FileHandler();
@@ -39,6 +40,8 @@ class LottieEditor {
         this.closeModalBtn = document.querySelector(".modal-close");
         this.exportJsonBtn = document.getElementById("export-as-json");
         this.exportTgsBtn = document.getElementById("export-as-tgs");
+        this.exportSvgBtn = document.getElementById("export-as-svg");
+        this.exportFrameInput = document.getElementById("exportFrameInput");
         this.resetBtn = document.getElementById("resetBtn");
 
         // Initialize color renderer with callbacks
@@ -108,6 +111,7 @@ class LottieEditor {
         this.resetBtn.onclick = () => this.resetColors();
         this.exportJsonBtn.onclick = () => this.handleExport("json");
         this.exportTgsBtn.onclick = () => this.handleExport("tgs");
+        this.exportSvgBtn.onclick = () => this.handleSvgExport();
         this.closeModalBtn.onclick = () => this.closeModal();
         this.modal.onclick = (e) => {
             if (e.target === this.modal) this.closeModal();
@@ -224,13 +228,37 @@ class LottieEditor {
             alert("Please load a Lottie or TGS file first.");
             return;
         }
+
+        // Pause animation and store state
+        this.wasPlayingBeforeModal = !this.animController.getState().isPaused;
+        if (this.wasPlayingBeforeModal) {
+            this.animController.pause();
+            this.playPauseBtn.textContent = "Play";
+        }
+
         this.modal.style.display = "flex";
+
+        // Set current frame in export input
+        // Use slider value as it's the most reliable source for the user's current view
+        const currentFrame = Math.round(this.slider.value);
+        this.exportFrameInput.value = currentFrame;
+        this.exportFrameInput.max = this.slider.max;
+
         setTimeout(() => this.modal.classList.add("show"), 10);
     }
 
     closeModal() {
         this.modal.classList.remove("show");
-        setTimeout(() => (this.modal.style.display = "none"), 300);
+        setTimeout(() => {
+            this.modal.style.display = "none";
+
+            // Resume animation if it was playing before
+            if (this.wasPlayingBeforeModal) {
+                this.animController.togglePlay(); // Since we paused it, toggle will play it
+                this.playPauseBtn.textContent = "Pause";
+                this.wasPlayingBeforeModal = false;
+            }
+        }, 300);
     }
 
     handleExport(format) {
@@ -241,6 +269,55 @@ class LottieEditor {
             format,
             (src, tgt) => this.fileHandler.deepTraverseAndCopyColors(src, tgt)
         );
+    }
+
+    handleSvgExport() {
+        const frame = parseInt(this.exportFrameInput.value);
+        if (isNaN(frame) || frame < 0) {
+            alert("Please enter a valid frame number.");
+            return;
+        }
+
+        // Store current state
+        const wasPaused = this.animController.getState().isPaused;
+        const originalFrame = this.animController.getState().currentFrame;
+
+        // Go to target frame
+        this.animController.goToFrame(frame, true);
+
+        // Wait for render (next tick)
+        setTimeout(() => {
+            const svgElement = document.getElementById("anim").querySelector("svg");
+            if (svgElement) {
+                // Clone the SVG to avoid modifying the live one
+                const svgClone = svgElement.cloneNode(true);
+
+                // Ensure xmlns attribute
+                svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+                const svgData = svgClone.outerHTML;
+                const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `frame_${frame}.svg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Restore state
+                if (!wasPaused) {
+                    this.animController.goToFrame(originalFrame, false);
+                } else {
+                    this.animController.goToFrame(originalFrame, true);
+                }
+
+                this.closeModal();
+            } else {
+                alert("Could not generate SVG. Please try again.");
+            }
+        }, 100);
     }
 
     initializeColorEditor(data) {
