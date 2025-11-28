@@ -1,4 +1,5 @@
 import { hexToRgb } from "../utils/colorUtils.js";
+import { ColorPicker } from "./ColorPicker.js";
 
 /**
  * Renders color UI elements and handles color input changes
@@ -9,6 +10,7 @@ export class ColorRenderer {
         this.onColorChange = onColorChange;
         this.onGradientPositionChange = onGradientPositionChange;
         this.onSaveState = onSaveState;
+        this.colorPickers = []; // Track all color picker instances
     }
     /**
      * Render colors to the UI
@@ -17,6 +19,10 @@ export class ColorRenderer {
      * @param {string} filterType - Current filter type
      */
     renderColors(colors, isGrouped, filterType = "All") {
+        // Clean up existing color pickers
+        this.colorPickers.forEach(picker => picker.destroy());
+        this.colorPickers = [];
+
         this.container.innerHTML = "";
 
         if (colors.length === 0) {
@@ -88,21 +94,14 @@ export class ColorRenderer {
         const card = document.createElement("div");
         card.className = "color-card";
 
-        const input = document.createElement("input");
-        input.type = "color";
-        input.value = c.hex;
+        // Create a container for the color picker that will be styled like a circular swatch
+        const pickerContainer = document.createElement("div");
+        pickerContainer.style.width = "50px";
+        pickerContainer.style.height = "50px";
+        pickerContainer.style.position = "relative";
 
-        // Store metadata for label updates
-        input.dataset.filterType = filterType;
-        input.dataset.index = index;
-        input.dataset.shapeType = c.shapeType;
-
-        input.onfocus = () => this.onSaveState();
-        input.onchange = () => this.onSaveState();
-        input.oninput = () => this.handleColorInput(input, c, isGrouped);
-
+        // Create label first so we can reference it in onChange
         const label = document.createElement("label");
-
         if (isGrouped) {
             label.textContent = `${c.count} instances of ${c.hex.toUpperCase()}`;
         } else {
@@ -113,7 +112,76 @@ export class ColorRenderer {
             }
         }
 
-        card.appendChild(input);
+        // Create the ColorPicker
+        const picker = new ColorPicker({
+            initialColor: c.hex,
+            onChange: (colorObj) => {
+                const newHex = colorObj.hex;
+                const { r, g, b } = hexToRgb(newHex);
+                let colorsToUpdate = isGrouped ? c.instances : [c];
+
+                colorsToUpdate.forEach((instance) => {
+                    const normalizedR = r / 255;
+                    const normalizedG = g / 255;
+                    const normalizedB = b / 255;
+
+                    if (instance.type === "solid" || instance.type === "stroke") {
+                        if (instance.ref.hasOwnProperty("s")) {
+                            instance.ref.s = [normalizedR, normalizedG, normalizedB, 1];
+                        } else if (instance.ref.hasOwnProperty("k")) {
+                            instance.ref.k = [normalizedR, normalizedG, normalizedB, 1];
+                        }
+                    } else if (instance.type === "gradient") {
+                        if (instance.ref.hasOwnProperty("s") && Array.isArray(instance.ref.s)) {
+                            instance.ref.s[instance.index + 1] = normalizedR;
+                            instance.ref.s[instance.index + 2] = normalizedG;
+                            instance.ref.s[instance.index + 3] = normalizedB;
+                        } else if (instance.ref.hasOwnProperty("k") && Array.isArray(instance.ref.k)) {
+                            instance.ref.k[instance.index + 1] = normalizedR;
+                            instance.ref.k[instance.index + 2] = normalizedG;
+                            instance.ref.k[instance.index + 3] = normalizedB;
+                        }
+                    }
+                });
+
+                c.hex = newHex;
+
+                // Update the trigger's background color
+                picker.trigger.style.background = newHex;
+
+                // Update the label
+                if (isGrouped) {
+                    label.textContent = `${c.count} instances of ${newHex.toUpperCase()}`;
+                } else {
+                    if (filterType === "All") {
+                        label.innerHTML = `${c.shapeType} ${index + 1}<br>${newHex.toUpperCase()}`;
+                    } else {
+                        label.textContent = newHex.toUpperCase();
+                    }
+                }
+
+                this.onColorChange();
+            },
+            onOpen: () => this.onSaveState(),
+            container: pickerContainer,
+            showEyedropper: true
+        });
+
+        // Track the picker instance
+        this.colorPickers.push(picker);
+
+        // Style the trigger to look like a circular swatch matching the original design
+        const trigger = picker.trigger;
+        trigger.style.width = "50px";
+        trigger.style.height = "50px";
+        trigger.style.padding = "0";
+        trigger.style.borderRadius = "50%";
+        trigger.style.background = c.hex;
+        trigger.style.border = "none";
+        trigger.style.boxShadow = "inset 0 0 0 1px rgba(0, 0, 0, 0.1)";
+        trigger.innerHTML = ""; // Remove default content
+
+        card.appendChild(pickerContainer);
         card.appendChild(label);
         targetContainer.appendChild(card);
     }
@@ -137,12 +205,65 @@ export class ColorRenderer {
             const stopDiv = document.createElement("div");
             stopDiv.className = "gradient-stop";
 
-            const colorInput = document.createElement("input");
-            colorInput.type = "color";
-            colorInput.value = stop.hex;
-            colorInput.onfocus = () => this.onSaveState();
-            colorInput.onchange = () => this.onSaveState();
-            colorInput.oninput = () => this.handleColorInput(colorInput, stop, false);
+            // Create a container for the color picker
+            const pickerContainer = document.createElement("div");
+            pickerContainer.style.width = "50px";
+            pickerContainer.style.height = "50px";
+            pickerContainer.style.position = "relative";
+
+            // Create the hex label BEFORE the picker so we can reference it in onChange
+            const hexLabel = document.createElement("label");
+            hexLabel.textContent = stop.hex.toUpperCase();
+            hexLabel.style.fontSize = "0.75rem";
+            hexLabel.style.marginTop = "4px";
+            hexLabel.style.marginBottom = "4px";
+
+            // Create the ColorPicker
+            const picker = new ColorPicker({
+                initialColor: stop.hex,
+                onChange: (colorObj) => {
+                    const newHex = colorObj.hex;
+                    const { r, g, b } = hexToRgb(newHex);
+                    const normalizedR = r / 255;
+                    const normalizedG = g / 255;
+                    const normalizedB = b / 255;
+
+                    if (stop.ref.hasOwnProperty("s") && Array.isArray(stop.ref.s)) {
+                        stop.ref.s[stop.index + 1] = normalizedR;
+                        stop.ref.s[stop.index + 2] = normalizedG;
+                        stop.ref.s[stop.index + 3] = normalizedB;
+                    } else if (stop.ref.hasOwnProperty("k") && Array.isArray(stop.ref.k)) {
+                        stop.ref.k[stop.index + 1] = normalizedR;
+                        stop.ref.k[stop.index + 2] = normalizedG;
+                        stop.ref.k[stop.index + 3] = normalizedB;
+                    }
+
+                    stop.hex = newHex;
+                    hexLabel.textContent = newHex.toUpperCase();
+
+                    // Update the trigger's background color
+                    picker.trigger.style.background = newHex;
+
+                    this.onColorChange();
+                },
+                onOpen: () => this.onSaveState(),
+                container: pickerContainer,
+                showEyedropper: true
+            });
+
+            // Track the picker instance
+            this.colorPickers.push(picker);
+
+            // Style the trigger to look like a circular swatch
+            const trigger = picker.trigger;
+            trigger.style.width = "50px";
+            trigger.style.height = "50px";
+            trigger.style.padding = "0";
+            trigger.style.borderRadius = "50%";
+            trigger.style.background = stop.hex;
+            trigger.style.border = "none";
+            trigger.style.boxShadow = "inset 0 0 0 1px rgba(0, 0, 0, 0.1)";
+            trigger.innerHTML = ""; // Remove default content
 
             const posInput = document.createElement("input");
             posInput.type = "number";
@@ -156,13 +277,7 @@ export class ColorRenderer {
                 this.onSaveState();
             };
 
-            const hexLabel = document.createElement("label");
-            hexLabel.textContent = stop.hex.toUpperCase();
-            hexLabel.style.fontSize = "0.75rem";
-            hexLabel.style.marginTop = "4px";
-            hexLabel.style.marginBottom = "4px";
-
-            stopDiv.appendChild(colorInput);
+            stopDiv.appendChild(pickerContainer);
             stopDiv.appendChild(hexLabel);
             stopDiv.appendChild(posInput);
             stopsContainer.appendChild(stopDiv);
@@ -229,66 +344,5 @@ export class ColorRenderer {
 
         c.offset = newOffset;
         this.onGradientPositionChange();
-    }
-
-    /**
-     * Handle color input change
-     * @param {HTMLInputElement} input - Color input element
-     * @param {Object} c - Color object
-     * @param {boolean} isGrouped - Whether this is a grouped color
-     */
-    handleColorInput(input, c, isGrouped) {
-        const newHex = input.value;
-        const { r, g, b } = hexToRgb(newHex);
-        let colorsToUpdate = isGrouped ? c.instances : [c];
-
-        colorsToUpdate.forEach((instance) => {
-            const normalizedR = r / 255;
-            const normalizedG = g / 255;
-            const normalizedB = b / 255;
-
-            if (instance.type === "solid" || instance.type === "stroke") {
-                if (instance.ref.hasOwnProperty("s")) {
-                    instance.ref.s = [normalizedR, normalizedG, normalizedB, 1];
-                } else if (instance.ref.hasOwnProperty("k")) {
-                    instance.ref.k = [normalizedR, normalizedG, normalizedB, 1];
-                }
-            } else if (instance.type === "gradient") {
-                if (instance.ref.hasOwnProperty("s") && Array.isArray(instance.ref.s)) {
-                    instance.ref.s[instance.index + 1] = normalizedR;
-                    instance.ref.s[instance.index + 2] = normalizedG;
-                    instance.ref.s[instance.index + 3] = normalizedB;
-                } else if (instance.ref.hasOwnProperty("k") && Array.isArray(instance.ref.k)) {
-                    instance.ref.k[instance.index + 1] = normalizedR;
-                    instance.ref.k[instance.index + 2] = normalizedG;
-                    instance.ref.k[instance.index + 3] = normalizedB;
-                }
-            }
-        });
-
-        c.hex = newHex;
-
-        // Update the label if it exists
-        if (input.nextElementSibling && input.nextElementSibling.tagName === "LABEL") {
-            if (isGrouped) {
-                // For batch/grouped colors, show the instance count
-                input.nextElementSibling.textContent = `${c.count} instances of ${newHex.toUpperCase()}`;
-            } else {
-                // For non-grouped colors, preserve the original label format
-                const filterType = input.dataset.filterType;
-                const index = input.dataset.index;
-                const shapeType = input.dataset.shapeType;
-
-                if (filterType === "All" && shapeType && index !== undefined) {
-                    // Show shape type, index, and hex
-                    input.nextElementSibling.innerHTML = `${shapeType} ${parseInt(index) + 1}<br>${newHex.toUpperCase()}`;
-                } else {
-                    // Just show the hex (for gradients or filtered views)
-                    input.nextElementSibling.textContent = newHex.toUpperCase();
-                }
-            }
-        }
-
-        this.onColorChange();
     }
 }
