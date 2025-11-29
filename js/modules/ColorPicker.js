@@ -599,18 +599,6 @@ export class ColorPicker {
 
         // Update position on scroll
         this.updatePopupPosition();
-
-        // Check if popup is fully within viewport
-        const popupRect = this.popup.getBoundingClientRect();
-        const isFullyVisible = popupRect.top >= 0 &&
-            popupRect.left >= 0 &&
-            popupRect.bottom <= window.innerHeight &&
-            popupRect.right <= window.innerWidth;
-
-        // Close if any part goes outside viewport
-        if (!isFullyVisible) {
-            this.close();
-        }
     }
 
     close() {
