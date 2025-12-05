@@ -53,9 +53,9 @@ export class ColorRenderer {
         const satSlider = hsvControls.querySelector("#global-sat");
         const valueSlider = hsvControls.querySelector("#global-value");
 
-        const hueValue = hslControls.querySelector("#val-hue");
-        const satValue = hslControls.querySelector("#val-sat");
-        const valueValue = hslControls.querySelector("#val-value");
+        const hueValue = hsvControls.querySelector("#val-hue");
+        const satValue = hsvControls.querySelector("#val-sat");
+        const valueValue = hsvControls.querySelector("#val-value");
 
         const updateAllColors = () => {
             hueValue.textContent = hueSlider.value;
