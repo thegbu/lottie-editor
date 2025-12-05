@@ -45,7 +45,7 @@ export class ColorRenderer {
             </label>
 
             <label>Value:
-                <input id="val-light" type="number" min="-100" max="100" value="0" style="width:50px;">
+                <input id="val-value" type="number" min="-100" max="100" value="0" style="width:50px;">
                 <input id="global-value" type="range" min="-100" max="100" value="0">
             </label>
         `;
