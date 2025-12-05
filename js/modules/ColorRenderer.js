@@ -156,6 +156,9 @@ export class ColorRenderer {
             }
         }
 
+        // Apply global hsv shift to the newly added pickers
+        updateAllColors();
+
         // Append containers to the main container
         if (hasSolids) {
             this.container.appendChild(gridContainer);
