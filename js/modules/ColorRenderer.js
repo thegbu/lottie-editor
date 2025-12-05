@@ -35,17 +35,17 @@ export class ColorRenderer {
         hsvControls.className = "hsv-controls";
         hsvControls.innerHTML = `
             <label>Hue:
-                <input id="val-hue" type="number" min="0" max="360" value="0" style="width:50px;">
+                <input id="val-hue" class="color-input" type="number" min="0" max="360" value="0" style="width:80px;">
                 <input id="global-hue" type="range" min="0" max="360" value="0">
             </label>
 
             <label>Saturation:
-                <input id="val-sat" type="number" min="-100" max="100" value="0" style="width:50px;">
+                <input id="val-sat" class="color-input" type="number" min="-100" max="100" value="0" style="width:80px;">
                 <input id="global-sat" type="range" min="-100" max="100" value="0">
             </label>
 
             <label>Value:
-                <input id="val-value" type="number" min="-100" max="100" value="0" style="width:50px;">
+                <input id="val-value" class="color-input" type="number" min="-100" max="100" value="0" style="width:80px;">
                 <input id="global-value" type="range" min="-100" max="100" value="0">
             </label>
         `;

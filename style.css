@@ -405,6 +405,10 @@ input[type=range]::-webkit-slider-runnable-track {
   color: var(--text-sub);
 }
 
+#colors {
+  container-type: inline-size;
+}
+
 .hsv-controls {
     display: flex;
     gap: 16px;
@@ -415,6 +419,18 @@ input[type=range]::-webkit-slider-runnable-track {
 .hsv-controls label {
     width: 33.333%;
     font-size: 0.85rem;
+}
+
+/* Stack sliders when container is narrow */
+@container (max-width: 600px) {
+    .hsv-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .hsv-controls label {
+        width: 100%;
+    }
 }
 
 .colors-grid {
