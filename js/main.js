@@ -360,22 +360,24 @@ class LottieEditor {
             activeButton.classList.add("active");
         }
 
-        this.colorRenderer.renderColors(this.getColorsToRender, isGrouped, filterType);
+        this.colorRenderer.renderColors(() => {
+            let colorsToRender = [];
+
+            if (isGrouped) {
+                const groupedColors = this.colorExtractor.getGroupedColors();
+                colorsToRender = Object.values(groupedColors).filter((g) => {
+                    return g.instances.some(filterCondition);
+                });
+            } else {
+                colorsToRender = this.allExtractedColors.filter(filterCondition);
+            }
+
+            return colorsToRender;
+        }, isGrouped, filterType);
     }
 
     getColorsToRender(isGrouped) {
-        let colorsToRender = [];
-
-        if (isGrouped) {
-            const groupedColors = this.colorExtractor.getGroupedColors();
-            colorsToRender = Object.values(groupedColors).filter((g) => {
-                return g.instances.some(filterCondition);
-            });
-        } else {
-            colorsToRender = this.allExtractedColors.filter(filterCondition);
-        }
-
-        return colorsToRender;
+        
     }
 
     reloadAnim() {
