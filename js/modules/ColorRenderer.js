@@ -34,15 +34,18 @@ export class ColorRenderer {
         const hsvControls = document.createElement("div");
         hsvControls.className = "hsv-controls";
         hsvControls.innerHTML = `
-            <label>Hue: <span id="val-hue">0</span>
+            <label>Hue:
+                <input id="val-hue" type="number" min="0" max="360" value="0" style="width:50px;">
                 <input id="global-hue" type="range" min="0" max="360" value="0">
             </label>
 
-            <label>Saturation: <span id="val-sat">0</span>
+            <label>Saturation:
+                <input id="val-sat" type="number" min="-100" max="100" value="0" style="width:50px;">
                 <input id="global-sat" type="range" min="-100" max="100" value="0">
             </label>
 
-            <label>Value: <span id="val-value">0</span>
+            <label>Value:
+                <input id="val-light" type="number" min="-100" max="100" value="0" style="width:50px;">
                 <input id="global-value" type="range" min="-100" max="100" value="0">
             </label>
         `;
@@ -58,9 +61,9 @@ export class ColorRenderer {
         const valueValue = hsvControls.querySelector("#val-value");
 
         const updateAllColors = () => {
-            hueValue.textContent = hueSlider.value;
-            satValue.textContent = satSlider.value;
-            valueValue.textContent = valueSlider.value;
+            hueValue.value = hueSlider.value;
+            satValue.value = satSlider.value;
+            valueValue.value = valueSlider.value;
 
             this.applyGlobalHsv(
                 parseFloat(hueSlider.value),
@@ -69,6 +72,20 @@ export class ColorRenderer {
             );
 
             this.onColorChange();
+        };
+
+        // When typing, sync slider and update
+        hueValue.oninput = () => {
+            hueSlider.value = hueValue.value;
+            updateAllColors();
+        };
+        satValue.oninput = () => {
+            satSlider.value = satValue.value;
+            updateAllColors();
+        };
+        valueValue.oninput = () => {
+            valueSlider.value = valueValue.value;
+            updateAllColors();
         };
 
         hueSlider.oninput = updateAllColors;
