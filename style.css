@@ -421,6 +421,18 @@ input[type=range]::-webkit-slider-runnable-track {
     font-size: 0.85rem;
 }
 
+#applyBtn {
+  margin-top: 7px;
+  width: 100%;
+  background: var(--primary-color);
+}
+
+#applyBtn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+}
+
 /* Stack sliders when container is narrow */
 @container (max-width: 600px) {
     .hsv-controls {

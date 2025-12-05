@@ -11,6 +11,9 @@ export class ColorRenderer {
         this.onGradientPositionChange = onGradientPositionChange;
         this.onSaveState = onSaveState;
         this.colorPickers = []; // Track all color picker instances
+        this.hueShift = "0";
+        this.satShift = "0";
+        this.valueShift = "0";
     }
     /**
      * Render colors to the UI
@@ -35,37 +38,41 @@ export class ColorRenderer {
         hsvControls.className = "hsv-controls";
         hsvControls.innerHTML = `
             <label>Hue:
-                <input id="val-hue" class="color-input" type="number" min="0" max="360" value="0" style="width:80px;">
-                <input id="global-hue" type="range" min="0" max="360" value="0">
+                <input id="hueShiftValue" class="color-input" type="number" min="0" max="360" value="0" style="width:80px;">
+                <input id="hueShiftSlider" type="range" min="0" max="360" value="0">
             </label>
 
             <label>Saturation:
-                <input id="val-sat" class="color-input" type="number" min="-100" max="100" value="0" style="width:80px;">
-                <input id="global-sat" type="range" min="-100" max="100" value="0">
+                <input id="satShiftValue" class="color-input" type="number" min="-100" max="100" value="0" style="width:80px;">
+                <input id="satShiftSlider" type="range" min="-100" max="100" value="0">
             </label>
 
             <label>Value:
-                <input id="val-value" class="color-input" type="number" min="-100" max="100" value="0" style="width:80px;">
-                <input id="global-value" type="range" min="-100" max="100" value="0">
+                <input id="valueShiftValue" class="color-input" type="number" min="-100" max="100" value="0" style="width:80px;">
+                <input id="valueShiftSlider" type="range" min="-100" max="100" value="0">
             </label>
+
+            <button class="action-btn" id="applyBtn">Apply</button>
         `;
         this.container.appendChild(hsvControls);
 
         // Attach slider listeners
-        const hueSlider = hsvControls.querySelector("#global-hue");
-        const satSlider = hsvControls.querySelector("#global-sat");
-        const valueSlider = hsvControls.querySelector("#global-value");
+        const hueSlider = hsvControls.querySelector("#hueShiftSlider");
+        const satSlider = hsvControls.querySelector("#satShiftSlider");
+        const valueSlider = hsvControls.querySelector("#valueShiftSlider");
 
-        const hueValue = hsvControls.querySelector("#val-hue");
-        const satValue = hsvControls.querySelector("#val-sat");
-        const valueValue = hsvControls.querySelector("#val-value");
+        const hueValue = hsvControls.querySelector("#hueShiftValue");
+        const satValue = hsvControls.querySelector("#satShiftValue");
+        const valueValue = hsvControls.querySelector("#valueShiftValue");
+
+        const applyButton = hsvControls.querySelector("#applyBtn");
 
         const updateAllColors = () => {
-            hueValue.value = hueSlider.value;
-            satValue.value = satSlider.value;
-            valueValue.value = valueSlider.value;
+            this.hueShift = hueValue.value = hueSlider.value;
+            this.satShift = satValue.value = satSlider.value;
+            this.valueShift = valueValue.value = valueSlider.value;
 
-            this.applyGlobalHsv(
+            this.setGlobalHsv(
                 parseFloat(hueSlider.value),
                 parseFloat(satSlider.value),
                 parseFloat(valueSlider.value)
@@ -91,6 +98,18 @@ export class ColorRenderer {
         hueSlider.oninput = updateAllColors;
         satSlider.oninput = updateAllColors;
         valueSlider.oninput = updateAllColors;
+
+        hueSlider.value = this.hueShift;
+        satSlider.value = this.satShift;
+        valueSlider.value = this.valueShift;
+
+        applyButton.onclick = () => {
+            this.applyGlobalHsv();
+            hueSlider.value = "0";
+            satSlider.value = "0";
+            valueSlider.value = "0";
+            updateAllColors();
+        }
 
 
         // Create separate containers for grid (solids) and flex (gradients)
@@ -147,9 +166,15 @@ export class ColorRenderer {
         }
     }
 
-    applyGlobalHsv(h, s, v) {
+    setGlobalHsv(h, s, v) {
         this.colorPickers.forEach(picker => {
-            picker.updateShift(h, s, v);
+            picker.setShift(h, s, v);
+        });
+    }
+
+    applyGlobalHsv() {
+        this.colorPickers.forEach(picker => {
+            picker.applyShift();
         });
     }
 

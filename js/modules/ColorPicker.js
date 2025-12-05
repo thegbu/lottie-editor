@@ -36,8 +36,16 @@ export class ColorPicker {
         this.updateUI();
     }
 
-    updateShift(h, s, v) {
+    setShift(h, s, v) {
         this.shift = {h: h, s: s, v: v};
+        this.notifyChange();
+    }
+
+    applyShift() {
+        var shiftedHsv = {h: this.hsv.h + this.shift.h % 360, s: this.clamp(this.hsv.s + this.shift.s, 0, 100), v: this.clamp(this.hsv.v + this.shift.v, 0, 100)}
+        if (!this.ignoreShift) {
+            this.hsv = shiftedHsv;
+        }
         this.notifyChange();
     }
 
@@ -638,6 +646,10 @@ export class ColorPicker {
     }
 
     destroy() {
+        // Remove any unapplied shift and update the UI
+        this.shift = {h: 0, s: 0, v: 0};
+        this.notifyChange();
+        
         // Remove from instances array
         const index = ColorPicker.instances.indexOf(this);
         if (index > -1) {
