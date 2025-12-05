@@ -405,6 +405,18 @@ input[type=range]::-webkit-slider-runnable-track {
   color: var(--text-sub);
 }
 
+.hsv-controls {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.hsv-controls label {
+    width: 33.333%;
+    font-size: 0.85rem;
+}
+
 .colors-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));

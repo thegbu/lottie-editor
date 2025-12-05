@@ -17,6 +17,7 @@ export class ColorPicker {
         // Store state in HSV for accurate 2D picker representation
         this.hsv = this.parseToHsv(this.options.initialColor);
         this.shift = {h: 0, s: 0, v:0};
+        this.ignoreShift = false;
         this.isDragging = false;
         this.activeSlider = null;
         this.isOpen = false;
@@ -414,7 +415,10 @@ export class ColorPicker {
     }
 
     getColorObject() {
-        const shiftedHsv = {h: this.hsv.h + this.shift.h % 360, s: this.clamp(this.hsv.s + this.shift.s, 0, 100), v: this.clamp(this.hsv.v + this.shift.v, 0, 100)}
+        var shiftedHsv = {h: this.hsv.h + this.shift.h % 360, s: this.clamp(this.hsv.s + this.shift.s, 0, 100), v: this.clamp(this.hsv.v + this.shift.v, 0, 100)}
+        if (this.ignoreShift) {
+            shiftedHsv = this.hsv;
+        }
         const rgb = this.hsvToRgb(shiftedHsv.h, shiftedHsv.s, shiftedHsv.v);
         const hsl = this.hsvToHsl(shiftedHsv.h, shiftedHsv.s, shiftedHsv.v);
 

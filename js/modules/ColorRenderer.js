@@ -34,9 +34,17 @@ export class ColorRenderer {
         const hsvControls = document.createElement("div");
         hsvControls.className = "hsv-controls";
         hsvControls.innerHTML = `
-            <label>Hue <input id="global-hue" type="range" min="0" max="360" value="0"></label>
-            <label>Saturation <input id="global-sat" type="range" min="-100" max="100" value="0"></label>
-            <label>Lightness <input id="global-value" type="range" min="-100" max="100" value="0"></label>
+            <label>Hue: <span id="val-hue">0</span>
+                <input id="global-hue" type="range" min="0" max="360" value="0">
+            </label>
+
+            <label>Saturation: <span id="val-sat">0</span>
+                <input id="global-sat" type="range" min="-100" max="100" value="0">
+            </label>
+
+            <label>Value: <span id="val-value">0</span>
+                <input id="global-value" type="range" min="-100" max="100" value="0">
+            </label>
         `;
         this.container.appendChild(hsvControls);
 
@@ -45,12 +53,21 @@ export class ColorRenderer {
         const satSlider = hsvControls.querySelector("#global-sat");
         const valueSlider = hsvControls.querySelector("#global-value");
 
+        const hueValue = hslControls.querySelector("#val-hue");
+        const satValue = hslControls.querySelector("#val-sat");
+        const valueValue = hslControls.querySelector("#val-value");
+
         const updateAllColors = () => {
+            hueValue.textContent = hueSlider.value;
+            satValue.textContent = satSlider.value;
+            valueValue.textContent = valueSlider.value;
+
             this.applyGlobalHsv(
                 parseFloat(hueSlider.value),
                 parseFloat(satSlider.value),
                 parseFloat(valueSlider.value)
             );
+
             this.onColorChange();
         };
 
@@ -218,6 +235,27 @@ export class ColorRenderer {
 
         card.appendChild(pickerContainer);
         card.appendChild(label);
+        
+        // Ignore Global Shift checkbox
+        const ignoreWrap = document.createElement("label");
+        ignoreWrap.style.display = "flex";
+        ignoreWrap.style.alignItems = "center";
+        ignoreWrap.style.gap = "4px";
+        ignoreWrap.style.fontSize = "0.75rem";
+
+        const ignoreBox = document.createElement("input");
+        ignoreBox.type = "checkbox";
+        ignoreBox.checked = picker.ignoreShift;
+        ignoreBox.onchange = () => {
+            picker.ignoreShift = ignoreBox.checked;
+            picker.notifyChange();
+        };
+
+        ignoreWrap.appendChild(ignoreBox);
+        ignoreWrap.append("Ignore Global Shift");
+        
+        card.appendChild(ignoreWrap);
+
         targetContainer.appendChild(card);
     }
 
@@ -286,6 +324,8 @@ export class ColorRenderer {
                 showEyedropper: true
             });
 
+            stop.picker = picker;
+
             // Track the picker instance
             this.colorPickers.push(picker);
 
@@ -326,6 +366,31 @@ export class ColorRenderer {
 
         card.appendChild(infoDiv);
         card.appendChild(stopsContainer);
+
+        // Ignore Global Shift checkbox
+        const ignoreWrap = document.createElement("label");
+        ignoreWrap.style.display = "flex";
+        ignoreWrap.style.alignItems = "center";
+        ignoreWrap.style.gap = "4px";
+        ignoreWrap.style.fontSize = "0.75rem";
+
+        const ignoreBox = document.createElement("input");
+        ignoreBox.type = "checkbox";
+        ignoreBox.checked = stops[0].picker?.ignoreShift || false;
+        ignoreBox.onchange = () => {
+            stops.forEach(s => {
+                if (s.picker) {
+                    s.picker.ignoreShift = ignoreBox.checked;
+                    s.picker.notifyChange();
+                }
+            });
+        };
+        
+        ignoreWrap.appendChild(ignoreBox);
+        ignoreWrap.append("Ignore Global Shift");
+        
+        card.appendChild(ignoreWrap);
+
         targetContainer.appendChild(card);
     }
 
