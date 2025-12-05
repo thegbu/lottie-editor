@@ -21,13 +21,14 @@ export class ColorRenderer {
      * @param {boolean} isGrouped - Whether colors are grouped
      * @param {string} filterType - Current filter type
      */
-    renderColors(colors, isGrouped, filterType = "All") {
+    renderColors(colorsGetter, isGrouped, filterType = "All") {
         // Clean up existing color pickers
         this.colorPickers.forEach(picker => picker.destroy());
         this.colorPickers = [];
 
         this.container.innerHTML = "";
 
+        const colors = colorsGetter(isGrouped);
         if (colors.length === 0) {
             this.container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #666;">No colors found for this filter type.</p>';
             return;
