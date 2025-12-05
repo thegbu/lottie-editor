@@ -212,6 +212,9 @@ class LottieEditor {
     resetColors() {
         if (!this.originalAnimData) return;
 
+        this.colorRenderer.hueShift = "0";
+        this.colorRenderer.satShift = "0";
+        this.colorRenderer.valueShift = "0";
         this.saveState();
         this.animData = JSON.parse(JSON.stringify(this.originalAnimData));
         this.initializeColorEditor(this.animData);
