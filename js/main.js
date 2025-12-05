@@ -212,6 +212,9 @@ class LottieEditor {
     resetColors() {
         if (!this.originalAnimData) return;
 
+        this.colorRenderer.hueShift = "0";
+        this.colorRenderer.satShift = "0";
+        this.colorRenderer.valueShift = "0";
         this.saveState();
         this.animData = JSON.parse(JSON.stringify(this.originalAnimData));
         this.initializeColorEditor(this.animData);
@@ -335,7 +338,6 @@ class LottieEditor {
     }
 
     filterAndRender(filterType, activeButton) {
-        let colorsToRender = [];
         const isGrouped = this.groupCheckbox.checked;
 
         const isFill = (shapeType) => shapeType === "fill";
@@ -355,22 +357,26 @@ class LottieEditor {
             return c.shapeType.toLowerCase().includes(filterType.toLowerCase());
         };
 
-        if (isGrouped) {
-            const groupedColors = this.colorExtractor.getGroupedColors();
-            colorsToRender = Object.values(groupedColors).filter((g) => {
-                return g.instances.some(filterCondition);
-            });
-        } else {
-            colorsToRender = this.allExtractedColors.filter(filterCondition);
-        }
-
         // Update active filter button
         document.querySelectorAll(".filter-btn").forEach((btn) => btn.classList.remove("active"));
         if (activeButton) {
             activeButton.classList.add("active");
         }
 
-        this.colorRenderer.renderColors(colorsToRender, isGrouped, filterType);
+        this.colorRenderer.renderColors(() => {
+            let colorsToRender = [];
+
+            if (isGrouped) {
+                const groupedColors = this.colorExtractor.getGroupedColors();
+                colorsToRender = Object.values(groupedColors).filter((g) => {
+                    return g.instances.some(filterCondition);
+                });
+            } else {
+                colorsToRender = this.allExtractedColors.filter(filterCondition);
+            }
+
+            return colorsToRender;
+        }, isGrouped, filterType);
     }
 
     reloadAnim() {

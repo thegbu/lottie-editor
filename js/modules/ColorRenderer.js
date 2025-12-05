@@ -11,6 +11,9 @@ export class ColorRenderer {
         this.onGradientPositionChange = onGradientPositionChange;
         this.onSaveState = onSaveState;
         this.colorPickers = []; // Track all color picker instances
+        this.hueShift = "0";
+        this.satShift = "0";
+        this.valueShift = "0";
     }
     /**
      * Render colors to the UI
@@ -18,17 +21,97 @@ export class ColorRenderer {
      * @param {boolean} isGrouped - Whether colors are grouped
      * @param {string} filterType - Current filter type
      */
-    renderColors(colors, isGrouped, filterType = "All") {
+    renderColors(getColors, isGrouped, filterType = "All") {
         // Clean up existing color pickers
         this.colorPickers.forEach(picker => picker.destroy());
         this.colorPickers = [];
 
         this.container.innerHTML = "";
 
+        const colors = getColors();
         if (colors.length === 0) {
             this.container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #666;">No colors found for this filter type.</p>';
             return;
         }
+
+        // === Global HSV Sliders ===
+        const hsvControls = document.createElement("div");
+        hsvControls.className = "hsv-controls";
+        hsvControls.innerHTML = `
+            <label>Hue:
+                <input id="hueShiftValue" class="color-input" type="number" min="0" max="360" value="0" style="width:80px;">
+                <input id="hueShiftSlider" type="range" min="0" max="360" value="0">
+            </label>
+
+            <label>Saturation:
+                <input id="satShiftValue" class="color-input" type="number" min="-100" max="100" value="0" style="width:80px;">
+                <input id="satShiftSlider" type="range" min="-100" max="100" value="0">
+            </label>
+
+            <label>Value:
+                <input id="valueShiftValue" class="color-input" type="number" min="-100" max="100" value="0" style="width:80px;">
+                <input id="valueShiftSlider" type="range" min="-100" max="100" value="0">
+            </label>
+
+            <button class="action-btn" id="applyBtn">Apply</button>
+        `;
+        this.container.appendChild(hsvControls);
+
+        // Attach slider listeners
+        const hueSlider = hsvControls.querySelector("#hueShiftSlider");
+        const satSlider = hsvControls.querySelector("#satShiftSlider");
+        const valueSlider = hsvControls.querySelector("#valueShiftSlider");
+
+        const hueValue = hsvControls.querySelector("#hueShiftValue");
+        const satValue = hsvControls.querySelector("#satShiftValue");
+        const valueValue = hsvControls.querySelector("#valueShiftValue");
+
+        const applyButton = hsvControls.querySelector("#applyBtn");
+
+        const updateAllColors = () => {
+            this.hueShift = hueValue.value = hueSlider.value;
+            this.satShift = satValue.value = satSlider.value;
+            this.valueShift = valueValue.value = valueSlider.value;
+
+            this.setGlobalHsv(
+                parseFloat(hueSlider.value),
+                parseFloat(satSlider.value),
+                parseFloat(valueSlider.value)
+            );
+
+            this.onColorChange();
+        };
+
+        // When typing, sync slider and update
+        hueValue.oninput = () => {
+            hueSlider.value = hueValue.value;
+            updateAllColors();
+        };
+        satValue.oninput = () => {
+            satSlider.value = satValue.value;
+            updateAllColors();
+        };
+        valueValue.oninput = () => {
+            valueSlider.value = valueValue.value;
+            updateAllColors();
+        };
+
+        hueSlider.oninput = updateAllColors;
+        satSlider.oninput = updateAllColors;
+        valueSlider.oninput = updateAllColors;
+
+        hueSlider.value = this.hueShift;
+        satSlider.value = this.satShift;
+        valueSlider.value = this.valueShift;
+
+        applyButton.onclick = () => {
+            this.applyGlobalHsv();
+            hueSlider.value = "0";
+            satSlider.value = "0";
+            valueSlider.value = "0";
+            updateAllColors();
+        }
+
 
         // Create separate containers for grid (solids) and flex (gradients)
         const gridContainer = document.createElement("div");
@@ -74,6 +157,9 @@ export class ColorRenderer {
             }
         }
 
+        // Apply global hsv shift to the newly added pickers
+        updateAllColors();
+
         // Append containers to the main container
         if (hasSolids) {
             this.container.appendChild(gridContainer);
@@ -82,6 +168,18 @@ export class ColorRenderer {
         if (hasGradients) {
             this.container.appendChild(flexContainer);
         }
+    }
+
+    setGlobalHsv(h, s, v) {
+        this.colorPickers.forEach(picker => {
+            picker.setShift(h, s, v);
+        });
+    }
+
+    applyGlobalHsv() {
+        this.colorPickers.forEach(picker => {
+            picker.applyShift();
+        });
     }
 
     /**
@@ -183,6 +281,27 @@ export class ColorRenderer {
 
         card.appendChild(pickerContainer);
         card.appendChild(label);
+        
+        // Ignore Global Shift checkbox
+        const ignoreWrap = document.createElement("label");
+        ignoreWrap.style.display = "flex";
+        ignoreWrap.style.alignItems = "center";
+        ignoreWrap.style.gap = "4px";
+        ignoreWrap.style.fontSize = "0.75rem";
+
+        const ignoreBox = document.createElement("input");
+        ignoreBox.type = "checkbox";
+        ignoreBox.checked = picker.ignoreShift;
+        ignoreBox.onchange = () => {
+            picker.ignoreShift = ignoreBox.checked;
+            picker.notifyChange();
+        };
+
+        ignoreWrap.appendChild(ignoreBox);
+        ignoreWrap.append("Ignore Global Shift");
+        
+        card.appendChild(ignoreWrap);
+
         targetContainer.appendChild(card);
     }
 
@@ -251,6 +370,8 @@ export class ColorRenderer {
                 showEyedropper: true
             });
 
+            stop.picker = picker;
+
             // Track the picker instance
             this.colorPickers.push(picker);
 
@@ -291,6 +412,31 @@ export class ColorRenderer {
 
         card.appendChild(infoDiv);
         card.appendChild(stopsContainer);
+
+        // Ignore Global Shift checkbox
+        const ignoreWrap = document.createElement("label");
+        ignoreWrap.style.display = "flex";
+        ignoreWrap.style.alignItems = "center";
+        ignoreWrap.style.gap = "4px";
+        ignoreWrap.style.fontSize = "0.75rem";
+
+        const ignoreBox = document.createElement("input");
+        ignoreBox.type = "checkbox";
+        ignoreBox.checked = stops[0].picker?.ignoreShift || false;
+        ignoreBox.onchange = () => {
+            stops.forEach(s => {
+                if (s.picker) {
+                    s.picker.ignoreShift = ignoreBox.checked;
+                    s.picker.notifyChange();
+                }
+            });
+        };
+        
+        ignoreWrap.appendChild(ignoreBox);
+        ignoreWrap.append("Ignore Global Shift");
+        
+        card.appendChild(ignoreWrap);
+
         targetContainer.appendChild(card);
     }
 

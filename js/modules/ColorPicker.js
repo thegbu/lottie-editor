@@ -16,6 +16,8 @@ export class ColorPicker {
 
         // Store state in HSV for accurate 2D picker representation
         this.hsv = this.parseToHsv(this.options.initialColor);
+        this.shift = {h: 0, s: 0, v:0};
+        this.ignoreShift = false;
         this.isDragging = false;
         this.activeSlider = null;
         this.isOpen = false;
@@ -32,6 +34,19 @@ export class ColorPicker {
         this.createElements();
         this.attachEventListeners();
         this.updateUI();
+    }
+
+    setShift(h, s, v) {
+        this.shift = {h: h, s: s, v: v};
+        this.notifyChange();
+    }
+
+    applyShift() {
+        var shiftedHsv = {h: this.hsv.h + this.shift.h % 360, s: this.clamp(this.hsv.s + this.shift.s, 0, 100), v: this.clamp(this.hsv.v + this.shift.v, 0, 100)}
+        if (!this.ignoreShift) {
+            this.hsv = shiftedHsv;
+        }
+        this.notifyChange();
     }
 
     createElements() {
@@ -403,9 +418,17 @@ export class ColorPicker {
         }
     }
 
+    clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
     getColorObject() {
-        const rgb = this.hsvToRgb(this.hsv.h, this.hsv.s, this.hsv.v);
-        const hsl = this.hsvToHsl(this.hsv.h, this.hsv.s, this.hsv.v);
+        var shiftedHsv = {h: this.hsv.h + this.shift.h % 360, s: this.clamp(this.hsv.s + this.shift.s, 0, 100), v: this.clamp(this.hsv.v + this.shift.v, 0, 100)}
+        if (this.ignoreShift) {
+            shiftedHsv = this.hsv;
+        }
+        const rgb = this.hsvToRgb(shiftedHsv.h, shiftedHsv.s, shiftedHsv.v);
+        const hsl = this.hsvToHsl(shiftedHsv.h, shiftedHsv.s, shiftedHsv.v);
 
         return {
             hex: this.rgbToHex(rgb.r, rgb.g, rgb.b),
@@ -623,6 +646,10 @@ export class ColorPicker {
     }
 
     destroy() {
+        // Remove any unapplied shift and update the UI
+        this.shift = {h: 0, s: 0, v: 0};
+        this.notifyChange();
+        
         // Remove from instances array
         const index = ColorPicker.instances.indexOf(this);
         if (index > -1) {
