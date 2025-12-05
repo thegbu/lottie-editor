@@ -379,10 +379,6 @@ class LottieEditor {
         }, isGrouped, filterType);
     }
 
-    getColorsToRender(isGrouped) {
-        
-    }
-
     reloadAnim() {
         const shouldPlayAfterReload = this.animController.loadAnimation(
             this.animData,
