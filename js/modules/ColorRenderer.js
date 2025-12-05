@@ -30,6 +30,35 @@ export class ColorRenderer {
             return;
         }
 
+        // === Global HSV Sliders ===
+        const hsvControls = document.createElement("div");
+        hsvControls.className = "hsv-controls";
+        hsvControls.innerHTML = `
+            <label>Hue <input id="global-hue" type="range" min="0" max="360" value="0"></label>
+            <label>Saturation <input id="global-sat" type="range" min="-100" max="100" value="0"></label>
+            <label>Lightness <input id="global-value" type="range" min="-100" max="100" value="0"></label>
+        `;
+        this.container.appendChild(hsvControls);
+
+        // Attach slider listeners
+        const hueSlider = hsvControls.querySelector("#global-hue");
+        const satSlider = hsvControls.querySelector("#global-sat");
+        const valueSlider = hsvControls.querySelector("#global-value");
+
+        const updateAllColors = () => {
+            this.applyGlobalHsv(
+                parseFloat(hueSlider.value),
+                parseFloat(satSlider.value),
+                parseFloat(valueSlider.value)
+            );
+            this.onColorChange();
+        };
+
+        hueSlider.oninput = updateAllColors;
+        satSlider.oninput = updateAllColors;
+        valueSlider.oninput = updateAllColors;
+
+
         // Create separate containers for grid (solids) and flex (gradients)
         const gridContainer = document.createElement("div");
         gridContainer.className = "colors-grid";
@@ -82,6 +111,12 @@ export class ColorRenderer {
         if (hasGradients) {
             this.container.appendChild(flexContainer);
         }
+    }
+
+    applyGlobalHsv(h, s, v) {
+        this.colorPickers.forEach(picker => {
+            picker.updateShift(h, s, v);
+        });
     }
 
     /**
