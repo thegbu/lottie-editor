@@ -42,25 +42,32 @@ export class ColorExtractor {
      * Recursively extract colors from object
      * @param {Object} o - Object to extract from
      * @param {Array} c - Array to store extracted colors
+     * @param {string} path - Current path in object tree
      */
-    recursiveExtract(o, c) {
+    recursiveExtract(o, c, path = "") {
         if (o && typeof o === "object") {
             const shapeType = o.ty;
 
             if (o.c && o.c.k) {
-                this.processFill(o, shapeType, c);
+                const colorPath = path ? `${path}.c` : "c";
+                this.processFill(o, shapeType, c, colorPath);
             }
 
             if (o.sc && o.sc.k) {
-                this.processStroke(o, c);
+                const colorPath = path ? `${path}.sc` : "sc";
+                this.processStroke(o, c, colorPath);
             }
 
             if (o.g) {
-                this.processGradient(o, shapeType, c);
+                const gradientPath = path ? `${path}.g` : "g";
+                this.processGradient(o, shapeType, c, gradientPath);
             }
 
             for (const k in o) {
-                this.recursiveExtract(o[k], c);
+                if (o.hasOwnProperty(k) && typeof o[k] === "object") {
+                    const newPath = path ? `${path}.${k}` : k;
+                    this.recursiveExtract(o[k], c, newPath);
+                }
             }
         }
     }
@@ -74,17 +81,17 @@ export class ColorExtractor {
      * @param {string} hex - Hex color value
      * @param {number|null} index - Index for gradient colors
      * @param {number|null} offset - Offset for gradient colors
+     * @param {string} path - Path to this color instance
      */
-    addColor(c, type, shapeType, ref, hex, index = null, offset = null, stopCount = null) {
-        const instance = { type, shapeType, ref, hex, index, offset, stopCount };
+    addColor(c, type, shapeType, ref, hex, index = null, offset = null, stopCount = null, path = "") {
+        const instance = { type, shapeType, ref, hex, index, offset, stopCount, path };
         c.push(instance);
 
-        // Use lowercase hex for grouping key to ensure case-insensitivity
         const groupKey = hex.toLowerCase();
 
         if (!this.groupedColors[groupKey]) {
             this.groupedColors[groupKey] = {
-                hex: hex, // Keep original case for display if needed, or normalize
+                hex: hex,
                 count: 0,
                 instances: [],
                 shapeType: shapeType,
@@ -92,10 +99,6 @@ export class ColorExtractor {
         }
         this.groupedColors[groupKey].count++;
         this.groupedColors[groupKey].instances.push(instance);
-
-        // If the new instance has a different hex case but matches the group, update the group hex to match the new one?
-        // Or just keep the first one found. Usually we want the latest one if we are editing.
-        // But here we are extracting.
     }
 
     /**
@@ -103,11 +106,13 @@ export class ColorExtractor {
      * @param {Object} o - Object containing fill data
      * @param {string} shapeType - Shape type
      * @param {Array} c - Array to store colors
+     * @param {string} path - Path to this color property
      */
-    processFill(o, shapeType, c) {
+    processFill(o, shapeType, c, path) {
         if (o.c.a === 1) {
             if (Array.isArray(o.c.k)) {
-                o.c.k.forEach((keyframe) => {
+                o.c.k.forEach((keyframe, i) => {
+                    const keyframePath = `${path}.k.${i}`;
                     if (keyframe.s && Array.isArray(keyframe.s)) {
                         let instanceType = "solid";
                         let instanceShapeType = "solid color (unknown)";
@@ -122,7 +127,7 @@ export class ColorExtractor {
                             console.warn(`Unknown animated color type detected. Shape type (ty): "${shapeType}", Color:`, rgbaToHex(keyframe.s), "Parent object:", o);
                         }
 
-                        this.addColor(c, instanceType, instanceShapeType, keyframe, rgbaToHex(keyframe.s));
+                        this.addColor(c, instanceType, instanceShapeType, keyframe, rgbaToHex(keyframe.s), null, null, null, keyframePath);
                     }
                 });
             }
@@ -140,7 +145,7 @@ export class ColorExtractor {
                 console.warn(`Unknown static color type detected. Shape type (ty): "${shapeType}", Color:`, rgbaToHex(o.c.k), "Parent object:", o);
             }
 
-            this.addColor(c, instanceType, instanceShapeType, o.c, rgbaToHex(o.c.k));
+            this.addColor(c, instanceType, instanceShapeType, o.c, rgbaToHex(o.c.k), null, null, null, path);
         }
     }
 
@@ -148,16 +153,18 @@ export class ColorExtractor {
      * Process stroke colors
      * @param {Object} o - Object containing stroke data
      * @param {Array} c - Array to store colors
+     * @param {string} path - Path to this color property
      */
-    processStroke(o, c) {
+    processStroke(o, c, path) {
         if (o.sc.a === 1 && Array.isArray(o.sc.k)) {
-            o.sc.k.forEach((keyframe) => {
+            o.sc.k.forEach((keyframe, i) => {
+                const keyframePath = `${path}.k.${i}`;
                 if (keyframe.s && Array.isArray(keyframe.s)) {
-                    this.addColor(c, "stroke", "stroke", keyframe, rgbaToHex(keyframe.s));
+                    this.addColor(c, "stroke", "stroke", keyframe, rgbaToHex(keyframe.s), null, null, null, keyframePath);
                 }
             });
         } else if (Array.isArray(o.sc.k)) {
-            this.addColor(c, "stroke", "stroke", o.sc, rgbaToHex(o.sc.k));
+            this.addColor(c, "stroke", "stroke", o.sc, rgbaToHex(o.sc.k), null, null, null, path);
         }
     }
 
@@ -166,13 +173,14 @@ export class ColorExtractor {
      * @param {Object} o - Object containing gradient data
      * @param {string} shapeType - Shape type
      * @param {Array} c - Array to store colors
+     * @param {string} path - Path to this gradient property
      */
-    processGradient(o, shapeType, c) {
+    processGradient(o, shapeType, c, path) {
         let gradientShapeType = "gradient";
         if (shapeType === "gf") gradientShapeType = "gradient fill";
         else if (shapeType === "gs") gradientShapeType = "gradient stroke";
 
-        const processGradientStops = (gradientData, gradientRef) => {
+        const processGradientStops = (gradientData, gradientRef, gradientPath) => {
             const arr = gradientData;
             const numStops = o.g.p || arr.length / 4;
             const loopLimit = numStops * 4;
@@ -183,6 +191,9 @@ export class ColorExtractor {
                 const g = arr[i + 2];
                 const b = arr[i + 3];
 
+                // Path for this specific stop (e.g., "...k.0" for first stop)
+                const stopPath = `${gradientPath}.${i}`;
+
                 this.addColor(
                     c,
                     "gradient",
@@ -191,21 +202,23 @@ export class ColorExtractor {
                     rgbToHex(r * 255, g * 255, b * 255),
                     i,
                     offset,
-                    numStops
+                    numStops,
+                    stopPath
                 );
             }
         };
 
         if (o.g.k && !o.g.k.a && Array.isArray(o.g.k)) {
-            processGradientStops(o.g.k, o.g);
+            processGradientStops(o.g.k, o.g, `${path}.k`);
         } else if (o.g.k && o.g.k.a === 1 && Array.isArray(o.g.k.k)) {
-            o.g.k.k.forEach((keyframe) => {
+            o.g.k.k.forEach((keyframe, i) => {
+                const keyframePath = `${path}.k.k.${i}`;
                 if (keyframe && Array.isArray(keyframe.s)) {
-                    processGradientStops(keyframe.s, keyframe);
+                    processGradientStops(keyframe.s, keyframe, `${keyframePath}.s`);
                 }
             });
         } else if (o.g.k && o.g.k.k && Array.isArray(o.g.k.k) && typeof o.g.k.k[0] === "number") {
-            processGradientStops(o.g.k.k, o.g.k);
+            processGradientStops(o.g.k.k, o.g.k, `${path}.k.k`);
         }
     }
 }

@@ -5,11 +5,13 @@ import { ColorPicker } from "./ColorPicker.js";
  * Renders color UI elements and handles color input changes
  */
 export class ColorRenderer {
-    constructor(containerElement, onColorChange, onGradientPositionChange, onSaveState) {
+    constructor(containerElement, onColorChange, onGradientPositionChange, onSaveState, hslManager, onLockToggle) {
         this.container = containerElement;
         this.onColorChange = onColorChange;
         this.onGradientPositionChange = onGradientPositionChange;
         this.onSaveState = onSaveState;
+        this.hslManager = hslManager;
+        this.onLockToggle = onLockToggle;
         this.colorPickers = []; // Track all color picker instances
     }
     /**
@@ -111,6 +113,62 @@ export class ColorRenderer {
                 label.textContent = c.hex.toUpperCase();
             }
         }
+
+        // Lock button
+        const lockBtn = document.createElement("button");
+        lockBtn.className = "lock-btn";
+        lockBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path class="lock-shackle" d="M7 11V7a5 5 0 0 1 10 0v4" stroke-linecap="round"></path>
+                <rect class="lock-body" x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <circle cx="12" cy="16" r="1.5" fill="currentColor"></circle>
+                <path d="M10 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+            </svg>
+        `;
+
+        // Determine lock state
+        let isLocked = false;
+        if (isGrouped) {
+            // In grouped mode, check if the first instance is locked (all should be synced)
+            if (c.instances && c.instances.length > 0) {
+                isLocked = this.hslManager.isPathLocked(c.instances[0].path);
+            }
+        } else {
+            isLocked = this.hslManager.isPathLocked(c.path);
+        }
+
+        if (isLocked) {
+            lockBtn.classList.add("locked");
+            card.classList.add("locked");
+        }
+
+        lockBtn.onclick = (e) => {
+            e.stopPropagation(); // Prevent opening color picker if overlapping
+
+            if (isGrouped) {
+                // Toggle lock for all instances in group
+                // Use the state of the first instance to determine whether to lock or unlock all
+                const shouldLock = !isLocked;
+
+                c.instances.forEach(instance => {
+                    if (shouldLock) {
+                        this.hslManager.lockPath(instance.path);
+                    } else {
+                        this.hslManager.unlockPath(instance.path);
+                    }
+                });
+
+                // Update local state for immediate UI feedback (though re-render will happen)
+                isLocked = shouldLock;
+            } else {
+                this.hslManager.togglePathLock(c.path);
+            }
+
+            this.onLockToggle();
+        };
+
+        // Add lock button to CARD
+        card.appendChild(lockBtn);
 
         // Create the ColorPicker
         const picker = new ColorPicker({
@@ -218,6 +276,32 @@ export class ColorRenderer {
             hexLabel.style.marginTop = "4px";
             hexLabel.style.marginBottom = "4px";
 
+            // Lock button
+            const lockBtn = document.createElement("button");
+            lockBtn.className = "lock-btn gradient-lock";
+            lockBtn.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path class="lock-shackle" d="M7 11V7a5 5 0 0 1 10 0v4" stroke-linecap="round"></path>
+                    <rect class="lock-body" x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <circle cx="12" cy="16" r="1.2" fill="currentColor"></circle>
+                    <path d="M10 16h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+                </svg>
+            `;
+
+            if (this.hslManager.isPathLocked(stop.path)) {
+                lockBtn.classList.add("locked");
+                stopDiv.classList.add("locked");
+            }
+
+            lockBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.hslManager.togglePathLock(stop.path);
+                this.onLockToggle();
+            };
+
+            // Add lock button to stopDiv
+            stopDiv.appendChild(lockBtn);
+
             // Create the ColorPicker
             const picker = new ColorPicker({
                 initialColor: stop.hex,
@@ -311,17 +395,11 @@ export class ColorRenderer {
         }
 
         if (arr) {
-            // Update the offset at the current index
             arr[c.index] = newOffset;
 
-            // Sort the gradient stops (chunks of 4: offset, r, g, b)
-            // We assume the array contains only color stops in multiples of 4. 
-            // Sometimes Lottie arrays have other data, but for gradient colors usually it's this structure.
-            // We should be careful if the array length is not multiple of 4.
-            // But ColorExtractor likely only extracts from valid gradient arrays.
-
+            // Sort gradient stops after offset change to maintain proper rendering order
+            // Lottie gradient format: [offset, r, g, b, offset, r, g, b, ...]
             const chunkSize = 4;
-            // Use c.stopCount if available to avoid touching transparency values
             const numStops = c.stopCount || Math.floor(arr.length / chunkSize);
             const stops = [];
 
@@ -330,10 +408,8 @@ export class ColorRenderer {
                 stops.push(arr.slice(start, start + chunkSize));
             }
 
-            // Sort by offset (first element of chunk)
             stops.sort((a, b) => a[0] - b[0]);
 
-            // Flatten back to the array
             for (let i = 0; i < numStops; i++) {
                 const start = i * chunkSize;
                 for (let j = 0; j < chunkSize; j++) {

@@ -77,6 +77,36 @@
       </div>
     </div>
 
+    <div id="hsl-controls-section">
+      <div class="hsl-header">
+        <p>Color Adjustments:</p>
+        <button id="resetHslBtn" class="action-btn secondary-btn" disabled>Reset All</button>
+      </div>
+
+      <div class="hsl-slider-row">
+        <label for="hueSlider">Hue</label>
+        <input type="range" id="hueSlider" class="hsl-slider hue-slider" min="-180" max="180" value="0" disabled />
+        <input type="number" id="hueInput" class="hsl-input" min="-180" max="180" value="0" disabled />
+        <span class="hsl-unit">°</span>
+      </div>
+
+      <div class="hsl-slider-row">
+        <label for="saturationSlider">Saturation</label>
+        <input type="range" id="saturationSlider" class="hsl-slider saturation-slider" min="-100" max="100" value="0"
+          disabled />
+        <input type="number" id="saturationInput" class="hsl-input" min="-100" max="100" value="0" disabled />
+        <span class="hsl-unit">%</span>
+      </div>
+
+      <div class="hsl-slider-row">
+        <label for="lightnessSlider">Lightness</label>
+        <input type="range" id="lightnessSlider" class="hsl-slider lightness-slider" min="-100" max="100" value="0"
+          disabled />
+        <input type="number" id="lightnessInput" class="hsl-input" min="-100" max="100" value="0" disabled />
+        <span class="hsl-unit">%</span>
+      </div>
+    </div>
+
     <p>3. Edit Colors:</p>
     <div id="colors">
       <p class="initial-message">Upload a file to see color controls.</p>
